@@ -1,4 +1,4 @@
-import { IsOptional, MaxLength } from 'class-validator';
+import { ArrayMaxSize, ArrayNotEmpty, IsOptional, MaxLength } from 'class-validator';
 import { ArgsType, Field, ID, InputType, ObjectType } from 'type-graphql';
 
 import { PaginatedResponse } from '#src/graphql/response/index.js';
@@ -33,6 +33,41 @@ export class SuspendCustomerInput {
   @Field(() => String)
   @MaxLength(500)
   reason: string;
+}
+
+export const BULK_LIMIT = 100;
+
+@InputType()
+export class BulkSuspendCustomersInput {
+  @Field(() => [ID])
+  @ArrayNotEmpty()
+  @ArrayMaxSize(BULK_LIMIT, { message: `Select at most ${BULK_LIMIT} customers` })
+  ids: string[];
+
+  @Field(() => String)
+  @MaxLength(500)
+  reason: string;
+}
+
+@ObjectType()
+export class BulkCustomerSkip {
+  @Field(() => ID)
+  id: string;
+
+  @Field(() => String, { nullable: true })
+  name?: string | null;
+
+  @Field(() => String)
+  reason: string;
+}
+
+@ObjectType({ description: 'Customers a bulk action applied to, and the ones it skipped with why' })
+export class BulkCustomerResult {
+  @Field(() => [ID])
+  succeeded: string[];
+
+  @Field(() => [BulkCustomerSkip])
+  skipped: BulkCustomerSkip[];
 }
 
 @ObjectType({ description: 'Outcome of opening one missing deposit account' })

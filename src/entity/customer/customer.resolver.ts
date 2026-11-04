@@ -23,10 +23,13 @@ import { Wallet } from '#src/entity/wallet/wallet.entity.js';
 import { VirtualAccount } from '#src/entity/virtualAccount/virtualAccount.entity.js';
 import { OnboardingService } from '#src/entity/onboarding/onboarding.service.js';
 import { AuditLogService } from '#src/entity/auditLog/auditLog.service.js';
-import { NotFoundError } from '#src/utils/errors.js';
+import { AppError, NotFoundError } from '#src/utils/errors.js';
 
 import { Customer } from './customer.entity.js';
 import {
+  BULK_LIMIT,
+  BulkCustomerResult,
+  BulkSuspendCustomersInput,
   CustomerQueryArgs,
   CustomersResponse,
   DepositAccountResult,
@@ -69,6 +72,28 @@ export class CustomerResolver {
   @Mutation(() => Customer)
   async suspendCustomer(@Arg('data') data: SuspendCustomerInput, @Ctx() ctx: Context) {
     return this.service.suspend(data.id, data.reason.trim(), ctx);
+  }
+
+  @Authorized([UserRole.Admin])
+  @Mutation(() => BulkCustomerResult)
+  async bulkSuspendCustomers(
+    @Arg('data') data: BulkSuspendCustomersInput,
+    @Ctx() ctx: Context
+  ): Promise<BulkCustomerResult> {
+    return this.service.bulkSuspend(data.ids, data.reason.trim(), ctx);
+  }
+
+  /** Permanent; only for customers with nothing at Bridge, no transactions and no stored wallet key. */
+  @Authorized([UserRole.Admin])
+  @Mutation(() => BulkCustomerResult)
+  async deleteCustomers(
+    @Arg('ids', () => [ID]) ids: string[],
+    @Ctx() ctx: Context
+  ): Promise<BulkCustomerResult> {
+    if (ids.length === 0 || ids.length > BULK_LIMIT) {
+      throw new AppError(`Select between 1 and ${BULK_LIMIT} customers`);
+    }
+    return this.service.deleteMany(ids, ctx);
   }
 
   @Authorized([UserRole.Admin])

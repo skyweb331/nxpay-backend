@@ -10,7 +10,7 @@ import { AppError, NotFoundError } from '#src/utils/errors.js';
 import { isUuid } from '#src/utils/id.js';
 import type { Context } from '#src/context.js';
 
-import type { CustomerQueryArgs } from './customer.type.js';
+import type { BulkCustomerResult, CustomerQueryArgs } from './customer.type.js';
 
 export type CustomerUpdate = Partial<
   Omit<CustomerRow, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
@@ -170,6 +170,85 @@ export class CustomerService {
       after: { status },
     });
     return updated;
+  }
+
+  private async loadForBulk(ids: string[]) {
+    const unique = [...new Set(ids)];
+    const customers = await this.prisma.orm.Customer.where((c) => c.id.in(unique)).all();
+    const users = await this.prisma.orm.User.where((u) =>
+      u.id.in(customers.map((c) => c.userId))
+    ).all();
+    const userById = new Map(users.map((u) => [u.id, u]));
+    const byId = new Map(customers.map((c) => [c.id, c]));
+    return unique.map((id) => {
+      const customer = byId.get(id) ?? null;
+      return { id, customer, user: customer ? (userById.get(customer.userId) ?? null) : null };
+    });
+  }
+
+  async bulkSuspend(ids: string[], reason: string, ctx: Context): Promise<BulkCustomerResult> {
+    const result: BulkCustomerResult = { succeeded: [], skipped: [] };
+    for (const { id, customer, user } of await this.loadForBulk(ids)) {
+      const name = user?.name ?? null;
+      if (!customer) result.skipped.push({ id, name, reason: 'Not found' });
+      else if (customer.status === CustomerStatus.Suspended) {
+        result.skipped.push({ id, name, reason: 'Already suspended' });
+      } else {
+        await this.suspend(id, reason, ctx);
+        result.succeeded.push(id);
+      }
+    }
+    return result;
+  }
+
+  /** Why a customer can't be deleted: anything at Bridge, money movement, or a wallet key we hold. */
+  private async deleteBlocker(customer: CustomerRow): Promise<string | null> {
+    const { orm } = this.prisma;
+    const customerId = customer.id;
+    if (customer.bridgeCustomerId || customer.kycLinkId) return 'Has a Bridge customer record';
+    if (await orm.CustodialWallet.where({ customerId }).first()) return 'Has a Bridge wallet';
+    if (await orm.VirtualAccount.where({ customerId }).first()) return 'Has deposit accounts';
+    if (await orm.Transaction.where({ customerId }).first()) return 'Has transactions';
+    const wallets = await orm.Wallet.where({ customerId }).select('id').all();
+    if (
+      wallets.length &&
+      (await orm.WalletKey.where((k) => k.walletId.in(wallets.map((w) => w.id))).first())
+    ) {
+      return 'Holds a wallet private key';
+    }
+    return null;
+  }
+
+  /** Permanently removes sign-ups that never reached Bridge (e.g. spam); everyone else is skipped. */
+  async deleteMany(ids: string[], ctx: Context): Promise<BulkCustomerResult> {
+    const result: BulkCustomerResult = { succeeded: [], skipped: [] };
+    for (const { id, customer, user } of await this.loadForBulk(ids)) {
+      const name = user?.name ?? null;
+      if (!customer || !user) {
+        result.skipped.push({ id, name, reason: 'Not found' });
+        continue;
+      }
+      const blocker = await this.prisma.transaction(async () => {
+        const reason = await this.deleteBlocker(customer);
+        if (reason) return reason;
+        // Support messages restrict deleting their author, so tickets go first
+        await this.prisma.orm.SupportTicket.where({ customerId: id }).deleteAll();
+        await this.prisma.orm.User.where({ id: user.id }).delete();
+        return null;
+      });
+      if (blocker) {
+        result.skipped.push({ id, name, reason: blocker });
+        continue;
+      }
+      await this.audit.log(ctx, {
+        action: 'customer.delete',
+        entity: 'Customer',
+        entityId: id,
+        before: { email: user.email, name: user.name, country: customer.country },
+      });
+      result.succeeded.push(id);
+    }
+    return result;
   }
 
   /** Lets a new sign-up sign in and emails them the sign-in link. */

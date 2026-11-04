@@ -53,6 +53,23 @@ The `BigInt` scalar type represents non-fractional signed whole numeric values.
 """
 scalar BigInteger
 
+"""Customers a bulk action applied to, and the ones it skipped with why"""
+type BulkCustomerResult {
+  skipped: [BulkCustomerSkip!]!
+  succeeded: [ID!]!
+}
+
+type BulkCustomerSkip {
+  id: ID!
+  name: String
+  reason: String!
+}
+
+input BulkSuspendCustomersInput {
+  ids: [ID!]!
+  reason: String!
+}
+
 enum Chain {
   base
   solana
@@ -407,6 +424,7 @@ type Mutation {
   archiveExternalWallet(data: WalletReauthInput!): Wallet!
   beginTotpSetup(mfaToken: String!): TotpSetup!
   beginTwoFactorSetup(data: BeginTwoFactorSetupInput!): TotpSetup!
+  bulkSuspendCustomers(data: BulkSuspendCustomersInput!): BulkCustomerResult!
   cancelFeeSchedule(id: ID!): FeeSchedule!
   closeSupportTicket(id: ID!): SupportTicket!
   completeOnboarding: OnboardingStatus!
@@ -416,6 +434,7 @@ type Mutation {
   createStaffUser(data: CreateStaffUserInput!): User!
   createSupportTicket(input: CreateSupportTicketInput!): SupportTicket!
   deactivateVirtualAccount(id: ID!): VirtualAccount!
+  deleteCustomers(ids: [ID!]!): BulkCustomerResult!
   disableTwoFactor(data: DisableTwoFactorInput!): User!
   enableTwoFactor(data: TwoFactorCodeInput!): BackupCodes!
   exportWalletKey(data: WalletReauthInput!): ExportedWalletKey!
