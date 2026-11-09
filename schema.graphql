@@ -472,6 +472,7 @@ type Mutation {
   simulateKycApproval: OnboardingStatus!
   startOnboarding(data: StartOnboardingInput!): OnboardingStatus!
   suspendCustomer(data: SuspendCustomerInput!): Customer!
+  updateCustomerEmail(data: UpdateCustomerEmailInput!): Customer!
   updateFeeScheduleDraft(data: UpdateFeeScheduleDraftInput!): FeeSchedule!
   updateFeeSettings(data: UpdateFeeSettingsInput!): FeeSettings!
   updatePassword(data: UpdatePasswordInput!): LoginResponse!
@@ -767,6 +768,11 @@ type TransactionsResponse {
 
 input TwoFactorCodeInput {
   code: String!
+}
+
+input UpdateCustomerEmailInput {
+  email: String!
+  id: ID!
 }
 
 input UpdateFeeScheduleDraftInput {

@@ -34,6 +34,7 @@ import {
   CustomersResponse,
   DepositAccountResult,
   SuspendCustomerInput,
+  UpdateCustomerEmailInput,
 } from './customer.type.js';
 import { CustomerService } from './customer.service.js';
 
@@ -106,6 +107,12 @@ export class CustomerResolver {
   @Mutation(() => Customer)
   async approveCustomer(@Arg('id', () => ID) id: string, @Ctx() ctx: Context) {
     return this.service.approve(id, ctx);
+  }
+
+  @Authorized([UserRole.Admin])
+  @Mutation(() => Customer)
+  async updateCustomerEmail(@Arg('data') data: UpdateCustomerEmailInput, @Ctx() ctx: Context) {
+    return this.service.changeEmail(data.id, data.email, ctx);
   }
 
   /** New hosted Bridge KYC link for support to send when the old one expired. */

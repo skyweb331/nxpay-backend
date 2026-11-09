@@ -3,12 +3,14 @@ import { or } from '@prisma/orm-postgres/orm-client';
 
 import { PrismaService, type CustomerRow } from '#src/service/prisma.js';
 import { config } from '#src/config.js';
-import { CustomerStatus, UserRole } from '#src/graphql/enum.js';
+import { CustomerStatus, OtpPurpose, UserRole } from '#src/graphql/enum.js';
 import { MailerService } from '#src/service/mailer.js';
 import { AuditLogService } from '#src/entity/auditLog/auditLog.service.js';
+import { OneTimeCodeService, expiresIn } from '#src/entity/oneTimeCode/oneTimeCode.service.js';
 import { AppError, NotFoundError } from '#src/utils/errors.js';
 import { isUuid } from '#src/utils/id.js';
 import type { Context } from '#src/context.js';
+import { normalizeEmail } from '#src/entity/user/user.service.js';
 
 import type { BulkCustomerResult, CustomerQueryArgs } from './customer.type.js';
 
@@ -58,7 +60,8 @@ export class CustomerService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditLogService,
-    private readonly mailer: MailerService
+    private readonly mailer: MailerService,
+    private readonly codes: OneTimeCodeService
   ) {}
 
   private async searchCollection(query: CustomerQueryArgs) {
@@ -249,6 +252,54 @@ export class CustomerService {
       result.succeeded.push(id);
     }
     return result;
+  }
+
+  /**
+   * Admin sets a new email immediately. The address is unverified until the customer
+   * confirms the code we send there. The previous address gets a security notice.
+   */
+  async changeEmail(id: string, email: string, ctx: Context) {
+    const customer = await this.getById(id);
+    if (!customer) throw new NotFoundError('Customer');
+    const user = await this.prisma.orm.User.where({ id: customer.userId }).first();
+    if (!user) throw new NotFoundError('Customer');
+
+    const next = normalizeEmail(email);
+    if (next === user.email) return customer;
+
+    const taken = await this.prisma.orm.User.where({ email: next }).first();
+    if (taken) throw new AppError('Email already exists', { field: 'email' });
+
+    const previous = user.email;
+    await this.prisma.orm.User.where({ id: user.id }).update({
+      email: next,
+      isEmailVerified: false,
+    });
+    await this.audit.log(ctx, {
+      action: 'customer.email_change',
+      entity: 'Customer',
+      entityId: id,
+      before: { email: previous },
+      after: { email: next },
+    });
+
+    const code = await this.codes.issueCode(user.id, OtpPurpose.EmailVerify);
+    this.mailer.sendSafe({
+      to: next,
+      subject: 'Verify your email',
+      template: 'verify-email',
+      locals: { name: user.name, code, expiresIn: expiresIn(OtpPurpose.EmailVerify) },
+    });
+    this.mailer.sendSafe({
+      to: previous,
+      subject: 'Your NxPay email address changed',
+      template: 'security-alert',
+      locals: {
+        name: user.name,
+        change: `Your sign-in email was changed from ${previous} to ${next} by NxPay support.`,
+      },
+    });
+    return customer;
   }
 
   /** Lets a new sign-up sign in and emails them the sign-in link. */

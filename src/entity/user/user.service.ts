@@ -71,6 +71,7 @@ export class UserService {
       Pick<
         UserRow,
         | 'name'
+        | 'email'
         | 'password'
         | 'role'
         | 'isEmailVerified'

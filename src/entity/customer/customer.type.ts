@@ -1,4 +1,4 @@
-import { ArrayMaxSize, ArrayNotEmpty, IsOptional, MaxLength } from 'class-validator';
+import { ArrayMaxSize, ArrayNotEmpty, IsEmail, IsOptional, MaxLength } from 'class-validator';
 import { ArgsType, Field, ID, InputType, ObjectType } from 'type-graphql';
 
 import { PaginatedResponse } from '#src/graphql/response/index.js';
@@ -33,6 +33,17 @@ export class SuspendCustomerInput {
   @Field(() => String)
   @MaxLength(500)
   reason: string;
+}
+
+@InputType()
+export class UpdateCustomerEmailInput {
+  @Field(() => ID)
+  id: string;
+
+  @Field(() => String)
+  @IsEmail({}, { message: 'Enter a valid email address' })
+  @MaxLength(254)
+  email: string;
 }
 
 export const BULK_LIMIT = 100;
