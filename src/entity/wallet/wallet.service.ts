@@ -52,6 +52,7 @@ export class WalletService {
   }
 
   async listForCustomer(customerId: string, includeArchived = false): Promise<WalletRow[]> {
+    await this.archiveOrphanedKeyless(customerId);
     return this.prisma.orm.Wallet.where((w) =>
       includeArchived
         ? w.customerId.eq(customerId)
@@ -59,6 +60,29 @@ export class WalletService {
     )
       .orderBy([(w) => w.type.desc(), (w) => w.createdAt.asc()])
       .all();
+  }
+
+  /**
+   * Generated wallets whose key was already removed stay Active in older data.
+   * Archive them (unless still selected for payouts) so they leave the main list.
+   */
+  private async archiveOrphanedKeyless(customerId: string) {
+    const customer = await this.prisma.orm.Customer.where({ id: customerId }).first();
+    if (!customer) return;
+    const orphaned = await this.prisma.orm.Wallet.where((w) =>
+      and(
+        w.customerId.eq(customerId),
+        w.type.eq(WalletType.Generated),
+        w.status.eq(WalletStatus.Active),
+        w.keyRemovedAt.isNotNull()
+      )
+    ).all();
+    for (const wallet of orphaned) {
+      if (customer.payoutWalletId === wallet.id) continue;
+      await this.prisma.orm.Wallet.where({ id: wallet.id }).update({
+        status: WalletStatus.Archived,
+      });
+    }
   }
 
   async getGenerated(customerId: string, chain: Chain) {
@@ -215,11 +239,24 @@ export class WalletService {
     ctx: Context
   ) {
     const wallet = await this.ownedWallet(customer, walletId);
-    if (wallet.status !== WalletStatus.Active) throw new AppError('This wallet is archived');
+    await this.assertPayoutEligible(wallet);
     if (customer.payoutWalletId === wallet.id) return wallet;
     await this.reauth(user, password, otp, OtpPurpose.WalletChange);
     await this.applyPayout(user, customer, wallet, ctx);
     return wallet;
+  }
+
+  /** Active only; generated wallets need a key still held by NxPay. */
+  private async assertPayoutEligible(wallet: WalletRow) {
+    if (wallet.status !== WalletStatus.Active) throw new AppError('This wallet is archived');
+    if (
+      wallet.type === WalletType.Generated &&
+      !(await this.walletKeys.hasKey(wallet.id))
+    ) {
+      throw new AppError(
+        "This wallet's key was removed from NxPay, so it can't be used for payouts. Choose another wallet."
+      );
+    }
   }
 
   private async applyPayout(user: UserRow, customer: CustomerRow, wallet: WalletRow, ctx: Context) {
@@ -376,7 +413,10 @@ export class WalletService {
     }
   }
 
-  /** After an export, the customer can make the wallet self-custodied by deleting NxPay's copy. */
+  /**
+   * After an export, the customer can delete NxPay's copy. Irreversible: we archive the wallet
+   * and block payouts to it, since NxPay can never reveal the key again.
+   */
   async removeKey(
     user: UserRow,
     customer: CustomerRow,
@@ -389,25 +429,31 @@ export class WalletService {
       throw new AppError('Only NxPay-generated wallets have a stored key');
     if (!wallet.keyExportedAt)
       throw new AppError('Export and back up the key before removing it from NxPay');
-    if (!(await this.walletKeys.hasKey(wallet.id))) return wallet;
+    if (customer.payoutWalletId === wallet.id) {
+      throw new AppError('Choose another payout wallet before removing the key from NxPay');
+    }
+
+    const alreadyGone = !(await this.walletKeys.hasKey(wallet.id));
+    if (alreadyGone && wallet.status === WalletStatus.Archived) return wallet;
 
     await this.auth.assertPassword(user, password);
     const updated = await this.prisma.transaction(async () => {
-      await this.walletKeys.remove(wallet.id);
+      if (!alreadyGone) await this.walletKeys.remove(wallet.id);
       return (await this.prisma.orm.Wallet.where({ id: wallet.id }).update({
-        keyRemovedAt: new Date(),
+        keyRemovedAt: wallet.keyRemovedAt ?? new Date(),
+        status: WalletStatus.Archived,
       }))!;
     });
     await this.audit.log(ctx, {
       action: 'wallet.keyRemove',
       entity: 'Wallet',
       entityId: wallet.id,
-      after: { chain: wallet.chain, address: wallet.address },
+      after: { chain: wallet.chain, address: wallet.address, status: WalletStatus.Archived },
     });
     this.alert(user, [
       ['Change', 'Private key removed from NxPay'],
       ['Address', wallet.address],
-      ['Note', 'NxPay can no longer export this key. The wallet still receives payouts.'],
+      ['Note', "NxPay can never export this key again. The wallet was archived and can't receive payouts."],
     ]);
     return updated;
   }
