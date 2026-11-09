@@ -65,12 +65,13 @@ const schema = z.object({
   WALLET_EXPORT_ALERT_PER_HOUR: z.coerce.number().int().positive().default(10),
   WALLET_EXPORT_LIMIT_PER_DAY: z.coerce.number().int().positive().default(3),
 
-  MAIL_TRANSPORT: z.enum(['ses', 'log']).default('log'),
+  MAIL_TRANSPORT: z.enum(['mailgun', 'log']).default('log'),
   MAIL_FROM: z.string().default('NxPay <no-reply@nxpay.local>'),
   OPS_ALERT_EMAIL: z.string().default('ops@nxpay.local'),
-  AWS_REGION: z.string().default('us-east-1'),
-  AWS_ACCESS_KEY_ID: z.string().default(''),
-  AWS_SECRET_ACCESS_KEY: z.string().default(''),
+  MAILGUN_API_KEY: z.string().default(''),
+  MAILGUN_DOMAIN: z.string().default(''),
+  /** US: https://api.mailgun.net · EU: https://api.eu.mailgun.net */
+  MAILGUN_API_URL: z.string().default('https://api.mailgun.net'),
 
   BLOCKED_COUNTRIES: list,
   BLOCKED_US_STATES: list,

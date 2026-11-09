@@ -3,14 +3,16 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pug from 'pug';
 import { Service } from 'typedi';
-import { SESv2Client, SendEmailCommand } from '@aws-sdk/client-sesv2';
 
 import { config, isProduction } from '#src/config.js';
 
 const TEMPLATE_DIR = fileURLToPath(new URL('../templates/email/', import.meta.url));
 
-/** Gmail and Outlook do not render SVG, so the logo is a PNG attached inline. */
-const LOGO_CID = 'nxpay-logo';
+/**
+ * Mailgun sets the Content-ID of an `inline` attachment to its filename, so the
+ * HTML `cid:` and the FileName must match.
+ */
+const LOGO_FILENAME = 'nxpay-logo.png';
 let logoPng: Promise<Buffer> | undefined;
 const loadLogo = () => (logoPng ??= fs.readFile(path.join(TEMPLATE_DIR, 'assets/logo.png')));
 
@@ -54,17 +56,20 @@ const htmlToText = (html: string) =>
 
 /**
  * Transactional email.
- * - `MAIL_TRANSPORT=ses`: AWS SES v2 (the only AWS service NxPay uses).
+ * - `MAIL_TRANSPORT=mailgun`: Mailgun Messages API.
  * - `MAIL_TRANSPORT=log`: prints the email and writes the HTML to `tmp/mail/` (local only).
  */
 @Service()
 export class MailerService {
   private readonly templates = new Map<string, pug.compileTemplate>();
-  private ses?: SESv2Client;
 
   assertConfigured() {
-    if (isProduction && config.MAIL_TRANSPORT !== 'ses') {
+    if (!isProduction) return;
+    if (config.MAIL_TRANSPORT !== 'mailgun') {
       throw new Error('MAIL_TRANSPORT=log is not allowed in production');
+    }
+    if (!config.MAILGUN_API_KEY || !config.MAILGUN_DOMAIN) {
+      throw new Error('MAILGUN_API_KEY and MAILGUN_DOMAIN are required in production');
     }
   }
 
@@ -78,7 +83,7 @@ export class MailerService {
       appName: 'NxPay',
       frontendUrl: config.FRONTEND_URL,
       adminUrl: config.ADMIN_URL,
-      logoCid: LOGO_CID,
+      logoCid: LOGO_FILENAME,
       year: new Date().getUTCFullYear(),
       ...locals,
     });
@@ -95,7 +100,7 @@ export class MailerService {
       const file = path.join(dir, `${Date.now()}-${template}.html`);
       await fs.writeFile(
         file,
-        html.replaceAll(`cid:${LOGO_CID}`, `data:image/png;base64,${logo.toString('base64')}`)
+        html.replaceAll(`cid:${LOGO_FILENAME}`, `data:image/png;base64,${logo.toString('base64')}`)
       );
       console.log(
         `[mail] to=${to} subject="${subject}" template=${template} file=${path.relative(process.cwd(), file)}\n${text}\n`
@@ -103,40 +108,27 @@ export class MailerService {
       return;
     }
 
-    this.ses ??= new SESv2Client({
-      region: config.AWS_REGION,
-      ...(config.AWS_ACCESS_KEY_ID && {
-        credentials: {
-          accessKeyId: config.AWS_ACCESS_KEY_ID,
-          secretAccessKey: config.AWS_SECRET_ACCESS_KEY,
-        },
-      }),
+    const form = new FormData();
+    form.set('from', config.MAIL_FROM);
+    form.set('to', to);
+    form.set('subject', subject);
+    form.set('text', text);
+    form.set('html', html);
+    form.append('inline', new Blob([logo], { type: 'image/png' }), LOGO_FILENAME);
+
+    const url = `${config.MAILGUN_API_URL.replace(/\/$/, '')}/v3/${config.MAILGUN_DOMAIN}/messages`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${Buffer.from(`api:${config.MAILGUN_API_KEY}`).toString('base64')}`,
+      },
+      body: form,
     });
 
-    await this.ses.send(
-      new SendEmailCommand({
-        FromEmailAddress: config.MAIL_FROM,
-        Destination: { ToAddresses: [to] },
-        Content: {
-          Simple: {
-            Subject: { Data: subject, Charset: 'UTF-8' },
-            Body: {
-              Html: { Data: html, Charset: 'UTF-8' },
-              Text: { Data: text, Charset: 'UTF-8' },
-            },
-            Attachments: [
-              {
-                RawContent: logo,
-                FileName: 'nxpay-logo.png',
-                ContentType: 'image/png',
-                ContentDisposition: 'INLINE',
-                ContentId: LOGO_CID,
-              },
-            ],
-          },
-        },
-      })
-    );
+    if (!response.ok) {
+      const body = await response.text().catch(() => '');
+      throw new Error(`Mailgun ${response.status}: ${body.slice(0, 500) || response.statusText}`);
+    }
   }
 
   /** Fire-and-forget variant: email failures never fail the caller. */

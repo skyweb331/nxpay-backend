@@ -27,7 +27,6 @@
   "dependencies": {
     "@apollo/server": "5.5.1",
     "@as-integrations/express5": "1.1.2",
-    "@aws-sdk/client-sesv2": "3.1147.0",
     "@prisma/orm-postgres": "8.0.0-rc.14",
     "@sentry/node": "11.4.0",
     "any-ascii": "0.3.3",
