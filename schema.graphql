@@ -135,6 +135,21 @@ type Customer implements Entity & TimeStamp {
   updatedAt: DateTimeISO
   user: User
   userId: ID!
+
+  """When the verified identity last changed (staff only)"""
+  verifiedAt: DateTimeISO
+
+  """Residence country verified by Bridge KYC, ISO alpha-2 (staff only)"""
+  verifiedCountry: String
+
+  """First name verified by Bridge KYC (staff only)"""
+  verifiedFirstName: String
+
+  """Last name verified by Bridge KYC (staff only)"""
+  verifiedLastName: String
+
+  """Residence state/subdivision verified by Bridge KYC (staff only)"""
+  verifiedRegion: String
   virtualAccounts: [VirtualAccount!]!
   wallets: [Wallet!]!
 }

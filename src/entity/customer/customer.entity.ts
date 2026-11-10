@@ -46,6 +46,41 @@ export class Customer extends Entity {
   @Field(() => GraphQLJSON, { nullable: true })
   rejectionReasons?: unknown;
 
+  @UseMiddleware(StaffOnlyField)
+  @Field(() => String, {
+    nullable: true,
+    description: 'First name verified by Bridge KYC (staff only)',
+  })
+  verifiedFirstName?: string | null;
+
+  @UseMiddleware(StaffOnlyField)
+  @Field(() => String, {
+    nullable: true,
+    description: 'Last name verified by Bridge KYC (staff only)',
+  })
+  verifiedLastName?: string | null;
+
+  @UseMiddleware(StaffOnlyField)
+  @Field(() => String, {
+    nullable: true,
+    description: 'Residence country verified by Bridge KYC, ISO alpha-2 (staff only)',
+  })
+  verifiedCountry?: string | null;
+
+  @UseMiddleware(StaffOnlyField)
+  @Field(() => String, {
+    nullable: true,
+    description: 'Residence state/subdivision verified by Bridge KYC (staff only)',
+  })
+  verifiedRegion?: string | null;
+
+  @UseMiddleware(StaffOnlyField)
+  @Field(() => Date, {
+    nullable: true,
+    description: 'When the verified identity last changed (staff only)',
+  })
+  verifiedAt?: Date | null;
+
   @Field(() => ID, { nullable: true })
   payoutWalletId?: string | null;
 

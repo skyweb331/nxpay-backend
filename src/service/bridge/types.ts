@@ -50,6 +50,12 @@ export interface BridgeEndorsement {
   requirements?: Record<string, unknown>;
 }
 
+export interface BridgeAddress {
+  country?: string;
+  subdivision?: string;
+  state?: string;
+}
+
 export interface BridgeCustomer {
   id: string;
   first_name?: string;
@@ -65,7 +71,8 @@ export interface BridgeCustomer {
   rejection_reasons?: BridgeRejectionReason[];
   requirements_due?: string[];
   future_requirements_due?: string[];
-  address?: { country?: string; subdivision?: string; state?: string };
+  address?: BridgeAddress;
+  residential_address?: BridgeAddress;
   created_at?: string;
   updated_at?: string;
 }

@@ -151,6 +151,12 @@ model Customer {
   tosLink          String?
   endorsements     Jsonb?
   rejectionReasons Jsonb?
+  // Identity as verified by Bridge KYC (synced from the Bridge customer)
+  verifiedFirstName String?
+  verifiedLastName  String?
+  verifiedCountry   String?
+  verifiedRegion    String?
+  verifiedAt        Timestamp?
   payoutWalletId   Uuid?
   onboardedAt      Timestamp?
   suspendedAt      Timestamp?

@@ -1,0 +1,212 @@
+[
+  {
+    "id": "column.public.customers.verifiedAt",
+    "label": "Add column \"verifiedAt\" to \"customers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "verifiedAt",
+        "table": "customers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"verifiedAt\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "customers",
+          "verifiedAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"verifiedAt\"",
+        "sql": "ALTER TABLE \"public\".\"customers\" ADD COLUMN \"verifiedAt\" timestamptz(3)"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"verifiedAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "customers",
+          "verifiedAt"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.customers.verifiedCountry",
+    "label": "Add column \"verifiedCountry\" to \"customers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "verifiedCountry",
+        "table": "customers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"verifiedCountry\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "customers",
+          "verifiedCountry"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"verifiedCountry\"",
+        "sql": "ALTER TABLE \"public\".\"customers\" ADD COLUMN \"verifiedCountry\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"verifiedCountry\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "customers",
+          "verifiedCountry"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.customers.verifiedFirstName",
+    "label": "Add column \"verifiedFirstName\" to \"customers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "verifiedFirstName",
+        "table": "customers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"verifiedFirstName\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "customers",
+          "verifiedFirstName"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"verifiedFirstName\"",
+        "sql": "ALTER TABLE \"public\".\"customers\" ADD COLUMN \"verifiedFirstName\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"verifiedFirstName\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "customers",
+          "verifiedFirstName"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.customers.verifiedLastName",
+    "label": "Add column \"verifiedLastName\" to \"customers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "verifiedLastName",
+        "table": "customers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"verifiedLastName\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "customers",
+          "verifiedLastName"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"verifiedLastName\"",
+        "sql": "ALTER TABLE \"public\".\"customers\" ADD COLUMN \"verifiedLastName\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"verifiedLastName\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "customers",
+          "verifiedLastName"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.customers.verifiedRegion",
+    "label": "Add column \"verifiedRegion\" to \"customers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "verifiedRegion",
+        "table": "customers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"verifiedRegion\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "customers",
+          "verifiedRegion"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"verifiedRegion\"",
+        "sql": "ALTER TABLE \"public\".\"customers\" ADD COLUMN \"verifiedRegion\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"verifiedRegion\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "customers",
+          "verifiedRegion"
+        ]
+      }
+    ]
+  }
+]

@@ -19,8 +19,11 @@ export const syncDepositAccounts = defineJob({
   queue: { policy: 'exclusive', retryLimit: 0, expireInSeconds: 900 },
   cron: '17 * * * *',
   handler: async () => {
-    const checked = await Container.get(OnboardingService).syncDepositAccounts();
+    const onboarding = Container.get(OnboardingService);
+    const checked = await onboarding.syncDepositAccounts();
     if (checked) console.info(`[jobs] deposit account sync: checked ${checked}`);
+    const identities = await onboarding.syncVerifiedIdentities();
+    if (identities) console.info(`[jobs] verified identity sync: checked ${identities}`);
   },
 });
 

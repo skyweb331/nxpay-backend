@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'e42e77210363488fd60067b61fc9eeabd25ed2fa8566223b21743d95e9e1063e'>;
+  StorageHashBase<'02009c53c6af9a35fcffcfdb3072c301f05869af8b197c895045eac4c44b0228'>;
 export type ExecutionHash =
   ExecutionHashBase<'9371ff8d9b998908d006f464f72dbd9a18f427aad6413625c2c8d0e50c7b6cf7'>;
 export type ProfileHash =
@@ -296,6 +296,11 @@ export type FieldOutputTypes = {
       readonly type: 'individual' | 'business' | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-date@1']['output'];
       readonly userId: CodecTypes['pg/uuid@1']['output'];
+      readonly verifiedAt: Date | null;
+      readonly verifiedCountry: CodecTypes['pg/text@1']['output'] | null;
+      readonly verifiedFirstName: CodecTypes['pg/text@1']['output'] | null;
+      readonly verifiedLastName: CodecTypes['pg/text@1']['output'] | null;
+      readonly verifiedRegion: CodecTypes['pg/text@1']['output'] | null;
     };
     readonly FeeSchedule: {
       readonly cancelledAt: Date | null;
@@ -543,6 +548,11 @@ export type FieldInputTypes = {
       readonly type: 'individual' | 'business' | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-date@1']['input'];
       readonly userId: CodecTypes['pg/uuid@1']['input'];
+      readonly verifiedAt: CodecTypes['pg/timestamptz-date@1']['input'] | null;
+      readonly verifiedCountry: CodecTypes['pg/text@1']['input'] | null;
+      readonly verifiedFirstName: CodecTypes['pg/text@1']['input'] | null;
+      readonly verifiedLastName: CodecTypes['pg/text@1']['input'] | null;
+      readonly verifiedRegion: CodecTypes['pg/text@1']['input'] | null;
     };
     readonly FeeSchedule: {
       readonly cancelledAt: CodecTypes['pg/timestamptz-date@1']['input'] | null;
@@ -790,6 +800,11 @@ export type StorageColumnTypes = {
       readonly type: 'individual' | 'business' | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-date@1']['output'];
       readonly userId: CodecTypes['pg/uuid@1']['output'];
+      readonly verifiedAt: Date | null;
+      readonly verifiedCountry: CodecTypes['pg/text@1']['output'] | null;
+      readonly verifiedFirstName: CodecTypes['pg/text@1']['output'] | null;
+      readonly verifiedLastName: CodecTypes['pg/text@1']['output'] | null;
+      readonly verifiedRegion: CodecTypes['pg/text@1']['output'] | null;
     };
     readonly fee_schedules: {
       readonly cancelledAt: Date | null;
@@ -1037,6 +1052,11 @@ export type StorageColumnInputTypes = {
       readonly type: 'individual' | 'business' | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-date@1']['input'];
       readonly userId: CodecTypes['pg/uuid@1']['input'];
+      readonly verifiedAt: CodecTypes['pg/timestamptz-date@1']['input'] | null;
+      readonly verifiedCountry: CodecTypes['pg/text@1']['input'] | null;
+      readonly verifiedFirstName: CodecTypes['pg/text@1']['input'] | null;
+      readonly verifiedLastName: CodecTypes['pg/text@1']['input'] | null;
+      readonly verifiedRegion: CodecTypes['pg/text@1']['input'] | null;
     };
     readonly fee_schedules: {
       readonly cancelledAt: CodecTypes['pg/timestamptz-date@1']['input'] | null;
@@ -1289,6 +1309,11 @@ export namespace Models {
     type: 'individual' | 'business' | null;
     updatedAt: CodecTypes['pg/timestamptz-date@1']['output'];
     userId: CodecTypes['pg/uuid@1']['output'];
+    verifiedAt: Date | null;
+    verifiedCountry: CodecTypes['pg/text@1']['output'] | null;
+    verifiedFirstName: CodecTypes['pg/text@1']['output'] | null;
+    verifiedLastName: CodecTypes['pg/text@1']['output'] | null;
+    verifiedRegion: CodecTypes['pg/text@1']['output'] | null;
     custodialWallets: public_CustodialWallet[];
     monthlyVolumes: public_MonthlyVolume[];
     supportTickets: public_SupportTicket[];
@@ -1863,6 +1888,32 @@ type ContractBase = Omit<
                   readonly nativeType: 'uuid';
                   readonly codecId: 'pg/uuid@1';
                   readonly nullable: false;
+                };
+                readonly verifiedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: true;
+                  readonly typeRef: 'Timestamp';
+                };
+                readonly verifiedCountry: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly verifiedFirstName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly verifiedLastName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly verifiedRegion: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
@@ -3664,6 +3715,29 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
               };
+              readonly verifiedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                };
+              };
+              readonly verifiedCountry: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly verifiedFirstName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly verifiedLastName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly verifiedRegion: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
             };
             readonly relations: {
               readonly custodialWallets: {
@@ -3765,6 +3839,11 @@ type ContractBase = Omit<
                 readonly type: { readonly column: 'type' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
                 readonly userId: { readonly column: 'userId' };
+                readonly verifiedAt: { readonly column: 'verifiedAt' };
+                readonly verifiedCountry: { readonly column: 'verifiedCountry' };
+                readonly verifiedFirstName: { readonly column: 'verifiedFirstName' };
+                readonly verifiedLastName: { readonly column: 'verifiedLastName' };
+                readonly verifiedRegion: { readonly column: 'verifiedRegion' };
               };
             };
           };

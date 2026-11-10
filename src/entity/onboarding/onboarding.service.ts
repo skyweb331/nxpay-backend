@@ -34,6 +34,7 @@ import {
 } from '#src/entity/virtualAccount/virtualAccount.service.js';
 import type { WebhookOutcome } from '#src/webhook/dispatcher.js';
 import { AppError } from '#src/utils/errors.js';
+import { toAlpha2, toSubdivision } from '#src/utils/country.js';
 import type { Context } from '#src/context.js';
 
 import type { OnboardingStatus } from './onboarding.type.js';
@@ -64,6 +65,26 @@ const customerReasons = (reasons?: BridgeRejectionReason[] | null) =>
     .filter((r): r is string => typeof r === 'string' && r.length > 0);
 
 const redirectUri = () => `${config.FRONTEND_URL}/onboarding`;
+
+/**
+ * Name and residence from the Bridge customer, kept only once KYC is approved. Fields Bridge
+ * omits keep their stored value; `verifiedAt` moves only when something actually changes.
+ */
+function verifiedIdentity(customer: CustomerRow, remote: BridgeCustomer): Partial<CustomerRow> {
+  if (normalizeKycStatus(remote.status ?? remote.kyc_status) !== KycStatus.approved) return {};
+  const address = remote.residential_address ?? remote.address;
+  const next = {
+    verifiedFirstName: remote.first_name?.trim() || customer.verifiedFirstName,
+    verifiedLastName: remote.last_name?.trim() || customer.verifiedLastName,
+    verifiedCountry: toAlpha2(address?.country) ?? customer.verifiedCountry,
+    verifiedRegion:
+      toSubdivision(address?.subdivision ?? address?.state) ?? customer.verifiedRegion,
+  };
+  const changed = (Object.keys(next) as (keyof typeof next)[]).some(
+    (k) => (next[k] ?? null) !== (customer[k] ?? null)
+  );
+  return changed ? { ...next, verifiedAt: new Date() } : {};
+}
 
 @Service()
 export class OnboardingService {
@@ -321,6 +342,7 @@ export class OnboardingService {
         (remote.endorsements ?? []).map((e) => ({ name: e.name, status: e.status }))
       ),
       rejectionReasons: toJson(customerReasons(remote.rejection_reasons)),
+      ...verifiedIdentity(customer, remote),
     };
     const updated = await this.transition(customer, next);
     // New endorsements (e.g. `sepa`) can unlock a currency that failed during onboarding
@@ -464,6 +486,26 @@ export class OnboardingService {
       }
     }
     return checked;
+  }
+
+  /** Backfills the verified identity for approved customers synced before it was stored. */
+  async syncVerifiedIdentities() {
+    if (!this.bridge.configured) return 0;
+    const missing = await this.prisma.orm.Customer.where((c) =>
+      and(c.kycStatus.eq(KycStatus.approved), c.bridgeCustomerId.isNotNull(), c.verifiedAt.isNull())
+    )
+      .orderBy((c) => c.updatedAt.asc())
+      .limit(50)
+      .all();
+    for (const customer of missing) {
+      try {
+        const remote = await this.bridge.customers.get(customer.bridgeCustomerId!);
+        await this.applyBridgeCustomer(customer, remote);
+      } catch (error) {
+        console.warn(`[onboarding] identity sync ${customer.id}: ${(error as Error).message}`);
+      }
+    }
+    return missing.length;
   }
 
   /** Staff retry: re-reads Bridge, then tries every currency that never had an account. */

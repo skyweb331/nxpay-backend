@@ -749,6 +749,41 @@
                   "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
+              },
+              "verifiedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "kind": "scalar"
+                }
+              },
+              "verifiedCountry": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "verifiedFirstName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "verifiedLastName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "verifiedRegion": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
               }
             },
             "relations": {
@@ -917,6 +952,21 @@
                 },
                 "userId": {
                   "column": "userId"
+                },
+                "verifiedAt": {
+                  "column": "verifiedAt"
+                },
+                "verifiedCountry": {
+                  "column": "verifiedCountry"
+                },
+                "verifiedFirstName": {
+                  "column": "verifiedFirstName"
+                },
+                "verifiedLastName": {
+                  "column": "verifiedLastName"
+                },
+                "verifiedRegion": {
+                  "column": "verifiedRegion"
                 }
               },
               "namespaceId": "public",
@@ -3490,6 +3540,32 @@
                   "codecId": "pg/uuid@1",
                   "nativeType": "uuid",
                   "nullable": false
+                },
+                "verifiedAt": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true,
+                  "typeRef": "Timestamp"
+                },
+                "verifiedCountry": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "verifiedFirstName": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "verifiedLastName": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "verifiedRegion": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
                 }
               },
               "foreignKeys": [
@@ -5473,7 +5549,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "e42e77210363488fd60067b61fc9eeabd25ed2fa8566223b21743d95e9e1063e",
+    "storageHash": "02009c53c6af9a35fcffcfdb3072c301f05869af8b197c895045eac4c44b0228",
     "types": {
       "Timestamp": {
         "codecId": "pg/timestamptz-date@1",
