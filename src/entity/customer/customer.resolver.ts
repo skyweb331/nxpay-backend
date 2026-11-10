@@ -26,10 +26,13 @@ import { AuditLogService } from '#src/entity/auditLog/auditLog.service.js';
 import { AppError, NotFoundError } from '#src/utils/errors.js';
 
 import { Customer } from './customer.entity.js';
+import { AuthService } from '#src/entity/user/auth.service.js';
+
 import {
   BULK_LIMIT,
   BulkCustomerResult,
   BulkSuspendCustomersInput,
+  CreateCustomerInput,
   CustomerQueryArgs,
   CustomersResponse,
   DepositAccountResult,
@@ -44,7 +47,8 @@ export class CustomerResolver {
   constructor(
     private readonly service: CustomerService,
     private readonly onboarding: OnboardingService,
-    private readonly audit: AuditLogService
+    private readonly audit: AuditLogService,
+    private readonly auth: AuthService
   ) {}
 
   @Authorized([UserRole.Support])
@@ -113,6 +117,13 @@ export class CustomerResolver {
   @Mutation(() => Customer)
   async updateCustomerEmail(@Arg('data') data: UpdateCustomerEmailInput, @Ctx() ctx: Context) {
     return this.service.changeEmail(data.id, data.email, ctx);
+  }
+
+  /** Invite a customer: creates an approved account and emails a set-password link. */
+  @Authorized([UserRole.Admin])
+  @Mutation(() => Customer)
+  async createCustomer(@Arg('data') data: CreateCustomerInput, @Ctx() ctx: Context) {
+    return this.auth.createCustomer(data, ctx);
   }
 
   /** New hosted Bridge KYC link for support to send when the old one expired. */

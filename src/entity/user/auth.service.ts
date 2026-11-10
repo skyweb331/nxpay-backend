@@ -1,7 +1,7 @@
 import { Service } from 'typedi';
 import { generateSecret, generateURI } from 'otplib';
 
-import { config, skipEmailVerification } from '#src/config.js';
+import { config } from '#src/config.js';
 import type { Context } from '#src/context.js';
 import { isStaff } from '#src/authChecker.js';
 import { PrismaService, type UserRow } from '#src/service/prisma.js';
@@ -29,11 +29,11 @@ import {
 
 import { TwoFactorService } from './twoFactor.service.js';
 import { normalizeEmail, UserService } from './user.service.js';
+import type { CreateCustomerInput } from '#src/entity/customer/customer.type.js';
 import type {
   CreateStaffUserInput,
   LoginInput,
   LoginResponse,
-  SignUpInput,
   TotpSetup,
   UpdateStaffUserInput,
 } from './user.type.js';
@@ -64,18 +64,21 @@ export class AuthService {
     });
   }
 
-  async signUp(input: SignUpInput, ctx: Context): Promise<LoginResponse> {
-    this.limiter.consume(`signup:${ctx.ip}`, 10, 60 * MINUTE);
+  /**
+   * Admin creates a customer account and emails a set-password link. Public sign-up is closed.
+   * The account is approved immediately so they can sign in after choosing a password.
+   */
+  async createCustomer(input: CreateCustomerInput, ctx: Context) {
     assertSupportedGeography(input.country, input.region);
 
-    const password = await hashPassword(input.password);
     const user = await this.prisma.transaction(async () => {
       const user = await this.users.createUser({
         email: input.email,
         name: input.name.trim(),
-        password,
         role: UserRole.Customer,
-        isEmailVerified: skipEmailVerification,
+        // Unusable until the invite link sets a real password
+        password: await hashPassword(generateToken(32)),
+        approvedAt: new Date(),
       });
       await this.customers.create({
         userId: user.id,
@@ -85,13 +88,25 @@ export class AuthService {
       return user;
     });
 
-    await this.audit.log(
-      { user, ip: ctx.ip },
-      { action: 'user.signUp', entity: 'User', entityId: user.id }
-    );
-
-    // The verification code is sent on the first sign-in after approval, while it's still valid
-    return { mfaRequired: false, totpSetupRequired: false, approvalRequired: true };
+    const token = await this.codes.issueToken(user.id, OtpPurpose.PasswordReset, { invite: true });
+    this.mailer.sendSafe({
+      to: user.email,
+      subject: 'You have been invited to NxPay',
+      template: 'customer-invite',
+      locals: {
+        name: user.name,
+        link: `${config.FRONTEND_URL}/auth/reset-password?token=${encodeURIComponent(token)}`,
+        expiresIn: expiresIn(OtpPurpose.PasswordReset),
+      },
+    });
+    const customer = await this.customers.getByUserId(user.id);
+    await this.audit.log(ctx, {
+      action: 'customer.create',
+      entity: 'Customer',
+      entityId: customer!.id,
+      after: { email: user.email, name: user.name, country: input.country, region: input.region },
+    });
+    return customer!;
   }
 
   private assertApproved(user: UserRow) {

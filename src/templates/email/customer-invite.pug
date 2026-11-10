@@ -1,0 +1,8 @@
+extends layout.pug
+include mixins.pug
+
+block content
+  p Hi #{name},
+  p You have been invited to #{appName}. Set your password to get started, then finish identity verification in the app.
+  +button(link, 'Set password')
+  p This link expires in #{expiresIn}. Ask NxPay support for a new invite if it expires.

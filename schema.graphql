@@ -84,6 +84,13 @@ input ConfigureFeeExternalAccountInput {
   routingNumber: String!
 }
 
+input CreateCustomerInput {
+  country: String!
+  email: String!
+  name: String!
+  region: String
+}
+
 input CreateFeeScheduleDraftInput {
   """Defaults to next month"""
   effectivePeriod: String
@@ -430,6 +437,7 @@ type Mutation {
   completeOnboarding: OnboardingStatus!
   configureFeeExternalAccount(input: ConfigureFeeExternalAccountInput!): FeeExternalAccountInfo!
   confirmTotpSetup(data: TotpInput!): LoginResponse!
+  createCustomer(data: CreateCustomerInput!): Customer!
   createFeeScheduleDraft(data: CreateFeeScheduleDraftInput!): FeeSchedule!
   createStaffUser(data: CreateStaffUserInput!): User!
   createSupportTicket(input: CreateSupportTicketInput!): SupportTicket!
@@ -463,7 +471,6 @@ type Mutation {
   """Re-runs the month-start status update"""
   rolloverFeeSchedules: SuccessResponse!
   setPayoutWallet(data: WalletReauthInput!): Wallet!
-  signUp(data: SignUpInput!): LoginResponse!
 
   """Bridge sandbox only"""
   simulateDeposit(input: SimulateDepositInput!): Transaction
@@ -588,14 +595,6 @@ input RequestPasswordResetInput {
 input ResetPasswordInput {
   password: String!
   token: String!
-}
-
-input SignUpInput {
-  country: String!
-  email: String!
-  name: String!
-  password: String!
-  region: String
 }
 
 input SimulateDepositInput {

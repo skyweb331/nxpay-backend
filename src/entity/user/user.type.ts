@@ -21,35 +21,6 @@ export class UsersResponse extends PaginatedResponse {
   users?: User[];
 }
 
-@InputType()
-export class SignUpInput {
-  @Field(() => String)
-  @Length(1, 120)
-  name: string;
-
-  @Field(() => String)
-  @IsEmail({}, { message: 'Enter a valid email address' })
-  @MaxLength(254)
-  email: string;
-
-  @Field(() => String)
-  @MinLength(10, { message: 'Password must be at least 10 characters' })
-  @MaxLength(128)
-  @Matches(PASSWORD_RULE, { message: PASSWORD_MESSAGE })
-  password: string;
-
-  /** ISO 3166-1 alpha-2 */
-  @Field(() => String)
-  @Matches(/^[A-Za-z]{2}$/, { message: 'Select your country' })
-  country: string;
-
-  /** US state code, required when country is US */
-  @Field(() => String, { nullable: true })
-  @IsOptional()
-  @Matches(/^[A-Za-z]{2}$/, { message: 'Select your state' })
-  region?: string;
-}
-
 // Login Input and Response
 @InputType()
 export class LoginInput {
@@ -76,7 +47,7 @@ export class LoginResponse {
   @Field(() => Boolean)
   totpSetupRequired: boolean = false;
 
-  /** New customer sign-up: no token until staff approve the account */
+  /** Legacy pending accounts: no token until staff approve */
   @Field(() => Boolean, { nullable: true })
   approvalRequired?: boolean;
 

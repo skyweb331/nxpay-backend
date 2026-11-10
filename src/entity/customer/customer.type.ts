@@ -1,4 +1,12 @@
-import { ArrayMaxSize, ArrayNotEmpty, IsEmail, IsOptional, MaxLength } from 'class-validator';
+import {
+  ArrayMaxSize,
+  ArrayNotEmpty,
+  IsEmail,
+  IsOptional,
+  Length,
+  Matches,
+  MaxLength,
+} from 'class-validator';
 import { ArgsType, Field, ID, InputType, ObjectType } from 'type-graphql';
 
 import { PaginatedResponse } from '#src/graphql/response/index.js';
@@ -44,6 +52,29 @@ export class UpdateCustomerEmailInput {
   @IsEmail({}, { message: 'Enter a valid email address' })
   @MaxLength(254)
   email: string;
+}
+
+@InputType()
+export class CreateCustomerInput {
+  @Field(() => String)
+  @Length(1, 120)
+  name: string;
+
+  @Field(() => String)
+  @IsEmail({}, { message: 'Enter a valid email address' })
+  @MaxLength(254)
+  email: string;
+
+  /** ISO 3166-1 alpha-2 */
+  @Field(() => String)
+  @Matches(/^[A-Za-z]{2}$/, { message: 'Select a country' })
+  country: string;
+
+  /** US state code, required when country is US */
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @Matches(/^[A-Za-z]{2}$/, { message: 'Select a state' })
+  region?: string;
 }
 
 export const BULK_LIMIT = 100;

@@ -28,7 +28,6 @@ import { User } from './user.entity.js';
 import {
   UsersResponse,
   UserQueryArgs,
-  SignUpInput,
   LoginInput,
   LoginResponse,
   TotpInput,
@@ -61,11 +60,6 @@ export class UserResolver {
   ) {}
 
   // Auth
-
-  @Mutation(() => LoginResponse)
-  async signUp(@Arg('data') data: SignUpInput, @Ctx() ctx: Context): Promise<LoginResponse> {
-    return this.auth.signUp(data, ctx);
-  }
 
   @Mutation(() => LoginResponse)
   async login(@Arg('data') data: LoginInput, @Ctx() ctx: Context): Promise<LoginResponse> {

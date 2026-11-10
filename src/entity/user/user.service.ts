@@ -57,6 +57,7 @@ export class UserService {
     name: string;
     role: UserRole;
     isEmailVerified?: boolean;
+    approvedAt?: Date | null;
   }) {
     return this.prisma.orm.User.create({
       ...data,
