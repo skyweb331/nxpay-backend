@@ -3,8 +3,9 @@ import { or } from '@prisma/orm-postgres/orm-client';
 
 import { PrismaService, type CustomerRow } from '#src/service/prisma.js';
 import { config } from '#src/config.js';
-import { CustomerStatus, OtpPurpose, UserRole } from '#src/graphql/enum.js';
+import { CustomerStatus, CustomerType, OtpPurpose, UserRole } from '#src/graphql/enum.js';
 import { MailerService } from '#src/service/mailer.js';
+import { BridgeApiError, BridgeService } from '#src/service/bridge/index.js';
 import { AuditLogService } from '#src/entity/auditLog/auditLog.service.js';
 import { OneTimeCodeService, expiresIn } from '#src/entity/oneTimeCode/oneTimeCode.service.js';
 import { AppError, NotFoundError } from '#src/utils/errors.js';
@@ -61,7 +62,8 @@ export class CustomerService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditLogService,
     private readonly mailer: MailerService,
-    private readonly codes: OneTimeCodeService
+    private readonly codes: OneTimeCodeService,
+    private readonly bridge: BridgeService
   ) {}
 
   private async searchCollection(query: CustomerQueryArgs) {
@@ -271,6 +273,7 @@ export class CustomerService {
     if (taken) throw new AppError('Email already exists', { field: 'email' });
 
     const previous = user.email;
+    const bridgeCustomerId = await this.updateBridgeEmail(customer, next);
     await this.prisma.orm.User.where({ id: user.id }).update({
       email: next,
       isEmailVerified: false,
@@ -280,7 +283,7 @@ export class CustomerService {
       entity: 'Customer',
       entityId: id,
       before: { email: previous },
-      after: { email: next },
+      after: { email: next, ...(bridgeCustomerId && { bridgeCustomerId }) },
     });
 
     const code = await this.codes.issueCode(user.id, OtpPurpose.EmailVerify);
@@ -300,6 +303,45 @@ export class CustomerService {
       },
     });
     return customer;
+  }
+
+  /**
+   * Bridge emails the customer directly (RFIs, KYC notices), so its record must change
+   * first; on failure nothing is saved locally. Returns the Bridge customer updated, if any.
+   */
+  private async updateBridgeEmail(customer: CustomerRow, email: string) {
+    if (!customer.bridgeCustomerId && !customer.kycLinkId) return null;
+    if (!this.bridge.configured) {
+      throw new AppError('Bridge is not configured, so the email cannot be updated there');
+    }
+    try {
+      let bridgeCustomerId = customer.bridgeCustomerId;
+      let type = customer.type;
+      if (!bridgeCustomerId && customer.kycLinkId) {
+        const link = await this.bridge.kycLinks.get(customer.kycLinkId);
+        bridgeCustomerId = link.customer_id ?? null;
+        type ??= link.type as CustomerType;
+      }
+      if (!bridgeCustomerId) {
+        throw new AppError(
+          "This customer has a Bridge verification link under the current email, but Bridge hasn't created their record yet. Try again after they accept Bridge's terms.",
+          { field: 'email' }
+        );
+      }
+      type ??= (await this.bridge.customers.get(bridgeCustomerId)).type as CustomerType;
+      await this.bridge.customers.updateEmail(bridgeCustomerId, type, email);
+      return bridgeCustomerId;
+    } catch (error) {
+      if (error instanceof BridgeApiError) {
+        throw new AppError(
+          error.retryable
+            ? 'Bridge is unavailable right now. Try again in a few minutes.'
+            : `Bridge rejected the email change: ${error.message}`,
+          { field: 'email' }
+        );
+      }
+      throw error;
+    }
   }
 
   /** Lets a new sign-up sign in and emails them the sign-in link. */

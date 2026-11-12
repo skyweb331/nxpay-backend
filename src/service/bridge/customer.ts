@@ -38,6 +38,15 @@ export class BridgeCustomersApi {
     return this.client.get<BridgeCustomer>(`/customers/${encodeURIComponent(customerId)}`);
   }
 
+  /** Partial update; Bridge requires `type` to pick the payload shape. */
+  updateEmail(customerId: string, type: 'individual' | 'business', email: string) {
+    return this.client.put<BridgeCustomer>(
+      `/customers/${encodeURIComponent(customerId)}`,
+      { type, email },
+      { idempotencyKey: crypto.randomUUID() }
+    );
+  }
+
   /** Hosted KYC link for an existing customer (RFIs, new endorsements). */
   kycLink(customerId: string, options: { endorsement?: string; redirectUri?: string } = {}) {
     return this.client.get<{ url: string }>(
