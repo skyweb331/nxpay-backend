@@ -422,6 +422,20 @@ type LoginResponse {
   totpSetupRequired: Boolean!
 }
 
+type Microdeposit implements Entity & TimeStamp {
+  amountInCents: BigInteger!
+  createdAt: DateTimeISO
+  currency: String!
+  customerId: ID!
+  description: String
+  id: ID!
+  occurredAt: DateTimeISO!
+  paymentRail: String
+  senderName: String
+  updatedAt: DateTimeISO
+  virtualAccountId: ID!
+}
+
 type MonthlyVolume {
   customerId: ID!
 
@@ -873,6 +887,7 @@ type VirtualAccount implements Entity & TimeStamp {
   destinationChain: Chain!
   destinationCurrency: String!
   id: ID!
+  microdeposits: [Microdeposit!]!
   sourceCurrency: FiatCurrency!
   status: VirtualAccountStatus!
   updatedAt: DateTimeISO
@@ -928,6 +943,10 @@ enum WalletType {
 }
 
 type WebhookEvent implements Entity & TimeStamp {
+  """
+  Virtual account activity type (e.g. microdeposit), else the object status
+  """
+  activityType: String
   attempts: Int!
   bridgeEventId: String!
   category: String!

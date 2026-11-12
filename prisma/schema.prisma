@@ -282,9 +282,31 @@ model VirtualAccount {
   createdAt              Timestamp       @default(now())
   updatedAt              temporal.updatedAtJsDate()
   transactions           Transaction[]
+  microdeposits          Microdeposit[]
 
   @@index([customerId])
   @@map("virtual_accounts")
+}
+
+// Small bank-verification deposits Bridge reports on a virtual account. Never onramped,
+// so they are kept apart from transactions, fees and monthly volume.
+model Microdeposit {
+  id               Uuid           @id @default(uuid(7))
+  bridgeActivityId String         @unique
+  virtualAccountId Uuid
+  virtualAccount   VirtualAccount @relation(fields: [virtualAccountId], references: [id], onDelete: Cascade)
+  customerId       Uuid
+  amountInCents    BigInt
+  currency         String
+  paymentRail      String?
+  senderName       String?
+  description      String?
+  occurredAt       Timestamp
+  createdAt        Timestamp      @default(now())
+
+  @@index([customerId])
+  @@index([virtualAccountId])
+  @@map("microdeposits")
 }
 
 // ---------------------------------------------------------------------------
@@ -460,6 +482,8 @@ model WebhookEvent {
   bridgeEventId String               @unique
   category      String
   type          String
+  // Virtual account activity type (e.g. microdeposit), else Bridge's event_object_status
+  activityType  String?
   objectId      String?
   payload       Jsonb
   status        webhook_event_status @default(Pending)

@@ -34,9 +34,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'02009c53c6af9a35fcffcfdb3072c301f05869af8b197c895045eac4c44b0228'>;
+  StorageHashBase<'9b78fc8c6ebbd767deaa3016b4f16180787694bc1ace2d0f5442ffc8a993652d'>;
 export type ExecutionHash =
-  ExecutionHashBase<'9371ff8d9b998908d006f464f72dbd9a18f427aad6413625c2c8d0e50c7b6cf7'>;
+  ExecutionHashBase<'9ca22254262dc96290c924a3d9df1b14361e4ae22d8a951a89fffba8ea856af9'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -334,6 +334,19 @@ export type FieldOutputTypes = {
       readonly masterKeyVersion: CodecTypes['pg/text@1']['output'];
       readonly wrappedDataKey: CodecTypes['pg/bytea@1']['output'];
     };
+    readonly Microdeposit: {
+      readonly amountInCents: CodecTypes['pg/int8@1']['output'];
+      readonly bridgeActivityId: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: Date;
+      readonly currency: CodecTypes['pg/text@1']['output'];
+      readonly customerId: CodecTypes['pg/uuid@1']['output'];
+      readonly description: CodecTypes['pg/text@1']['output'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly occurredAt: Date;
+      readonly paymentRail: CodecTypes['pg/text@1']['output'] | null;
+      readonly senderName: CodecTypes['pg/text@1']['output'] | null;
+      readonly virtualAccountId: CodecTypes['pg/uuid@1']['output'];
+    };
     readonly MonthlyVolume: {
       readonly createdAt: Date;
       readonly customerId: CodecTypes['pg/uuid@1']['output'];
@@ -484,6 +497,7 @@ export type FieldOutputTypes = {
       readonly wrappedDataKey: CodecTypes['pg/bytea@1']['output'];
     };
     readonly WebhookEvent: {
+      readonly activityType: CodecTypes['pg/text@1']['output'] | null;
       readonly attempts: CodecTypes['pg/int4@1']['output'];
       readonly bridgeEventId: CodecTypes['pg/text@1']['output'];
       readonly category: CodecTypes['pg/text@1']['output'];
@@ -586,6 +600,19 @@ export type FieldInputTypes = {
       readonly masterKeyVersion: CodecTypes['pg/text@1']['input'];
       readonly wrappedDataKey: CodecTypes['pg/bytea@1']['input'];
     };
+    readonly Microdeposit: {
+      readonly amountInCents: CodecTypes['pg/int8@1']['input'];
+      readonly bridgeActivityId: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
+      readonly currency: CodecTypes['pg/text@1']['input'];
+      readonly customerId: CodecTypes['pg/uuid@1']['input'];
+      readonly description: CodecTypes['pg/text@1']['input'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly occurredAt: CodecTypes['pg/timestamptz-date@1']['input'];
+      readonly paymentRail: CodecTypes['pg/text@1']['input'] | null;
+      readonly senderName: CodecTypes['pg/text@1']['input'] | null;
+      readonly virtualAccountId: CodecTypes['pg/uuid@1']['input'];
+    };
     readonly MonthlyVolume: {
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
       readonly customerId: CodecTypes['pg/uuid@1']['input'];
@@ -736,6 +763,7 @@ export type FieldInputTypes = {
       readonly wrappedDataKey: CodecTypes['pg/bytea@1']['input'];
     };
     readonly WebhookEvent: {
+      readonly activityType: CodecTypes['pg/text@1']['input'] | null;
       readonly attempts: CodecTypes['pg/int4@1']['input'];
       readonly bridgeEventId: CodecTypes['pg/text@1']['input'];
       readonly category: CodecTypes['pg/text@1']['input'];
@@ -837,6 +865,19 @@ export type StorageColumnTypes = {
       readonly iv: CodecTypes['pg/bytea@1']['output'];
       readonly masterKeyVersion: CodecTypes['pg/text@1']['output'];
       readonly wrappedDataKey: CodecTypes['pg/bytea@1']['output'];
+    };
+    readonly microdeposits: {
+      readonly amountInCents: CodecTypes['pg/int8@1']['output'];
+      readonly bridgeActivityId: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: Date;
+      readonly currency: CodecTypes['pg/text@1']['output'];
+      readonly customerId: CodecTypes['pg/uuid@1']['output'];
+      readonly description: CodecTypes['pg/text@1']['output'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly occurredAt: Date;
+      readonly paymentRail: CodecTypes['pg/text@1']['output'] | null;
+      readonly senderName: CodecTypes['pg/text@1']['output'] | null;
+      readonly virtualAccountId: CodecTypes['pg/uuid@1']['output'];
     };
     readonly monthly_volumes: {
       readonly createdAt: Date;
@@ -988,6 +1029,7 @@ export type StorageColumnTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-date@1']['output'];
     };
     readonly webhook_events: {
+      readonly activityType: CodecTypes['pg/text@1']['output'] | null;
       readonly attempts: CodecTypes['pg/int4@1']['output'];
       readonly bridgeEventId: CodecTypes['pg/text@1']['output'];
       readonly category: CodecTypes['pg/text@1']['output'];
@@ -1089,6 +1131,19 @@ export type StorageColumnInputTypes = {
       readonly iv: CodecTypes['pg/bytea@1']['input'];
       readonly masterKeyVersion: CodecTypes['pg/text@1']['input'];
       readonly wrappedDataKey: CodecTypes['pg/bytea@1']['input'];
+    };
+    readonly microdeposits: {
+      readonly amountInCents: CodecTypes['pg/int8@1']['input'];
+      readonly bridgeActivityId: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
+      readonly currency: CodecTypes['pg/text@1']['input'];
+      readonly customerId: CodecTypes['pg/uuid@1']['input'];
+      readonly description: CodecTypes['pg/text@1']['input'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly occurredAt: CodecTypes['pg/timestamptz-date@1']['input'];
+      readonly paymentRail: CodecTypes['pg/text@1']['input'] | null;
+      readonly senderName: CodecTypes['pg/text@1']['input'] | null;
+      readonly virtualAccountId: CodecTypes['pg/uuid@1']['input'];
     };
     readonly monthly_volumes: {
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
@@ -1240,6 +1295,7 @@ export type StorageColumnInputTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-date@1']['input'];
     };
     readonly webhook_events: {
+      readonly activityType: CodecTypes['pg/text@1']['input'] | null;
       readonly attempts: CodecTypes['pg/int4@1']['input'];
       readonly bridgeEventId: CodecTypes['pg/text@1']['input'];
       readonly category: CodecTypes['pg/text@1']['input'];
@@ -1367,6 +1423,21 @@ export namespace Models {
     masterKeyVersion: CodecTypes['pg/text@1']['output'];
     wrappedDataKey: CodecTypes['pg/bytea@1']['output'];
     readonly [RelationKeys]?: never;
+  };
+  export type public_Microdeposit = {
+    amountInCents: CodecTypes['pg/int8@1']['output'];
+    bridgeActivityId: CodecTypes['pg/text@1']['output'];
+    createdAt: Date;
+    currency: CodecTypes['pg/text@1']['output'];
+    customerId: CodecTypes['pg/uuid@1']['output'];
+    description: CodecTypes['pg/text@1']['output'] | null;
+    id: CodecTypes['pg/uuid@1']['output'];
+    occurredAt: Date;
+    paymentRail: CodecTypes['pg/text@1']['output'] | null;
+    senderName: CodecTypes['pg/text@1']['output'] | null;
+    virtualAccountId: CodecTypes['pg/uuid@1']['output'];
+    virtualAccount: public_VirtualAccount;
+    readonly [RelationKeys]?: 'virtualAccount';
   };
   export type public_MonthlyVolume = {
     createdAt: Date;
@@ -1511,8 +1582,9 @@ export namespace Models {
     updatedAt: CodecTypes['pg/timestamptz-date@1']['output'];
     custodialWallet: public_CustodialWallet;
     customer: public_Customer;
+    microdeposits: public_Microdeposit[];
     transactions: public_Transaction[];
-    readonly [RelationKeys]?: 'custodialWallet' | 'customer' | 'transactions';
+    readonly [RelationKeys]?: 'custodialWallet' | 'customer' | 'microdeposits' | 'transactions';
   };
   export type public_Wallet = {
     address: CodecTypes['pg/text@1']['output'];
@@ -1548,6 +1620,7 @@ export namespace Models {
     readonly [RelationKeys]?: 'wallet';
   };
   export type public_WebhookEvent = {
+    activityType: CodecTypes['pg/text@1']['output'] | null;
     attempts: CodecTypes['pg/int4@1']['output'];
     bridgeEventId: CodecTypes['pg/text@1']['output'];
     category: CodecTypes['pg/text@1']['output'];
@@ -1574,6 +1647,7 @@ export declare const models: {
     FeeSchedule: Models.public_FeeSchedule;
     FeeTier: Models.public_FeeTier;
     KeyVaultCanary: Models.public_KeyVaultCanary;
+    Microdeposit: Models.public_Microdeposit;
     MonthlyVolume: Models.public_MonthlyVolume;
     OneTimeCode: Models.public_OneTimeCode;
     SupportMessage: Models.public_SupportMessage;
@@ -2146,6 +2220,98 @@ type ContractBase = Omit<
               uniques: readonly [{ readonly columns: readonly ['masterKeyVersion'] }];
               indexes: readonly [];
               foreignKeys: readonly [];
+            };
+            readonly microdeposits: {
+              columns: {
+                readonly amountInCents: {
+                  readonly nativeType: 'int8';
+                  readonly codecId: 'pg/int8@1';
+                  readonly nullable: false;
+                };
+                readonly bridgeActivityId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly typeRef: 'Timestamp';
+                };
+                readonly currency: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly customerId: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+                readonly description: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+                readonly occurredAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly typeRef: 'Timestamp';
+                };
+                readonly paymentRail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly senderName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly virtualAccountId: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['bridgeActivityId'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'microdeposits_customerId_idx_b2a8a46c';
+                  readonly prefix: 'microdeposits_customerId_idx';
+                  readonly columns: readonly ['customerId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'microdeposits_virtualAccountId_idx_e02ad156';
+                  readonly prefix: 'microdeposits_virtualAccountId_idx';
+                  readonly columns: readonly ['virtualAccountId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'microdeposits';
+                    readonly columns: readonly ['virtualAccountId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'virtual_accounts';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
             };
             readonly monthly_volumes: {
               columns: {
@@ -3209,6 +3375,11 @@ type ContractBase = Omit<
             };
             readonly webhook_events: {
               columns: {
+                readonly activityType: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
                 readonly attempts: {
                   readonly nativeType: 'int4';
                   readonly codecId: 'pg/int4@1';
@@ -3412,6 +3583,10 @@ type ContractBase = Omit<
     readonly key_vault_canaries: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'KeyVaultCanary';
+    };
+    readonly microdeposits: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'Microdeposit';
     };
     readonly monthly_volumes: {
       readonly namespace: 'public' & NamespaceId;
@@ -4058,6 +4233,91 @@ type ContractBase = Omit<
                 readonly iv: { readonly column: 'iv' };
                 readonly masterKeyVersion: { readonly column: 'masterKeyVersion' };
                 readonly wrappedDataKey: { readonly column: 'wrappedDataKey' };
+              };
+            };
+          };
+          readonly Microdeposit: {
+            readonly fields: {
+              readonly amountInCents: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int8@1' };
+              };
+              readonly bridgeActivityId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                };
+              };
+              readonly currency: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly customerId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly description: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly occurredAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                };
+              };
+              readonly paymentRail: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly senderName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly virtualAccountId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+            };
+            readonly relations: {
+              readonly virtualAccount: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'VirtualAccount';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['virtualAccountId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'microdeposits';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly amountInCents: { readonly column: 'amountInCents' };
+                readonly bridgeActivityId: { readonly column: 'bridgeActivityId' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly currency: { readonly column: 'currency' };
+                readonly customerId: { readonly column: 'customerId' };
+                readonly description: { readonly column: 'description' };
+                readonly id: { readonly column: 'id' };
+                readonly occurredAt: { readonly column: 'occurredAt' };
+                readonly paymentRail: { readonly column: 'paymentRail' };
+                readonly senderName: { readonly column: 'senderName' };
+                readonly virtualAccountId: { readonly column: 'virtualAccountId' };
               };
             };
           };
@@ -4873,6 +5133,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['id'];
                 };
               };
+              readonly microdeposits: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Microdeposit';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['virtualAccountId'];
+                };
+              };
               readonly transactions: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -5104,6 +5375,10 @@ type ContractBase = Omit<
           };
           readonly WebhookEvent: {
             readonly fields: {
+              readonly activityType: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly attempts: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
@@ -5174,6 +5449,7 @@ type ContractBase = Omit<
               readonly table: 'webhook_events';
               readonly namespaceId: 'public';
               readonly fields: {
+                readonly activityType: { readonly column: 'activityType' };
                 readonly attempts: { readonly column: 'attempts' };
                 readonly bridgeEventId: { readonly column: 'bridgeEventId' };
                 readonly category: { readonly column: 'category' };
@@ -5412,6 +5688,14 @@ type ContractBase = Omit<
           readonly onCreate: { readonly id: 'uuidv7'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'key_vault_canaries';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv7'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'microdeposits';
             readonly field: 'id';
             readonly namespace: 'public';
           };

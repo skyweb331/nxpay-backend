@@ -55,6 +55,35 @@ export class DepositService {
     private readonly queue: QueueService
   ) {}
 
+  private async recordMicrodeposit(
+    va: VirtualAccountRow,
+    activity: BridgeVirtualAccountEvent
+  ): Promise<WebhookOutcome> {
+    const amount = cents(activity.amount);
+    if (amount === null) {
+      console.warn(`[deposit] microdeposit ${activity.id} has no amount`);
+      return 'ignored';
+    }
+    const source = activity.source ?? {};
+    const text = (value: unknown) => (typeof value === 'string' && value ? value : null);
+    try {
+      await this.prisma.orm.Microdeposit.create({
+        bridgeActivityId: activity.id,
+        virtualAccountId: va.id,
+        customerId: va.customerId,
+        amountInCents: amount,
+        currency: (activity.currency ?? String(va.sourceCurrency)).toLowerCase(),
+        paymentRail: text(source.payment_rail),
+        senderName: text(source['sender_name']),
+        description: text(source['description']),
+        occurredAt: activity.created_at ? new Date(activity.created_at) : new Date(),
+      });
+    } catch (error) {
+      if (!isSqlError(error, '23505')) throw error;
+    }
+    return 'processed';
+  }
+
   handleWebhook(event: BridgeWebhookEvent<BridgeVirtualAccountEvent>): Promise<WebhookOutcome> {
     return this.handleActivity(event.event_object);
   }
@@ -76,8 +105,9 @@ export class DepositService {
         await this.virtualAccounts.refresh(va, customer.bridgeCustomerId);
       return 'processed';
     }
-    // Microdeposits (bank account verification, < $1) are never onramped
-    if (activity.type === 'microdeposit' || !activity.deposit_id) return 'ignored';
+    // Microdeposits (bank account verification, < $1) are recorded but never onramped
+    if (activity.type === 'microdeposit') return this.recordMicrodeposit(va, activity);
+    if (!activity.deposit_id) return 'ignored';
 
     // EUR volume is converted at funds_received time; fetch outside the DB transaction
     const fxRate =

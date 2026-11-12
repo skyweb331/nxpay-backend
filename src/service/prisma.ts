@@ -50,6 +50,7 @@ export type WalletKeyRow = ResultType<Orm['WalletKey']>;
 export type KeyVaultCanaryRow = ResultType<Orm['KeyVaultCanary']>;
 export type CustodialWalletRow = ResultType<Orm['CustodialWallet']>;
 export type VirtualAccountRow = ResultType<Orm['VirtualAccount']>;
+export type MicrodepositRow = ResultType<Orm['Microdeposit']>;
 export type TransactionRow = ResultType<Orm['Transaction']>;
 export type TransactionEventRow = ResultType<Orm['TransactionEvent']>;
 export type MonthlyVolumeRow = ResultType<Orm['MonthlyVolume']>;

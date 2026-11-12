@@ -22,14 +22,24 @@ const WEBHOOK_LIST = {
     'bridgeEventId',
     'category',
     'type',
+    'activityType',
     'objectId',
     'status',
     'receivedAt',
     'processedAt',
   ],
-  sortable: ['id', 'receivedAt', 'processedAt', 'attempts', 'category', 'type'],
+  sortable: ['id', 'receivedAt', 'processedAt', 'attempts', 'category', 'type', 'activityType'],
   defaultSort: 'receivedAt',
 } as const;
+
+/** Same rule as the 20261112 migration backfill. */
+const activityTypeOf = (event: BridgeWebhookEvent<any>): string | null => {
+  const value =
+    event.event_category === 'virtual_account.activity'
+      ? event.event_object?.type
+      : event.event_object_status;
+  return typeof value === 'string' && value ? value : null;
+};
 
 @Service()
 export class WebhookEventService {
@@ -60,6 +70,7 @@ export class WebhookEventService {
         bridgeEventId: event.event_id,
         category: event.event_category,
         type: event.event_type,
+        activityType: activityTypeOf(event),
         objectId: event.event_object_id ?? null,
         payload: toJson(event),
       });

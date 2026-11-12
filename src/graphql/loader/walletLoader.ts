@@ -2,7 +2,12 @@ import DataLoader from 'dataloader';
 
 import type RootDataLoader from './index.js';
 import { groupBy, indexBy, uniq } from './utils.js';
-import type { CustodialWalletRow, VirtualAccountRow, WalletRow } from '#src/service/prisma.js';
+import type {
+  CustodialWalletRow,
+  MicrodepositRow,
+  VirtualAccountRow,
+  WalletRow,
+} from '#src/service/prisma.js';
 
 export const walletLoader = (parent: RootDataLoader) => {
   return new DataLoader<string, WalletRow | null>(
@@ -55,6 +60,20 @@ export const virtualAccountLoader = (parent: RootDataLoader) => {
     async (ids) => {
       const rows = await parent.prisma.orm.VirtualAccount.where((v) => v.id.in(uniq(ids))).all();
       return indexBy(ids, rows, (v) => v.id);
+    },
+    { ...parent.dataLoaderOptions }
+  );
+};
+
+export const microdepositsForVirtualAccountLoader = (parent: RootDataLoader) => {
+  return new DataLoader<string, MicrodepositRow[]>(
+    async (virtualAccountIds) => {
+      const rows = await parent.prisma.orm.Microdeposit.where((m) =>
+        m.virtualAccountId.in(uniq(virtualAccountIds))
+      )
+        .orderBy((m) => m.occurredAt.desc())
+        .all();
+      return groupBy(virtualAccountIds, rows, (m) => m.virtualAccountId);
     },
     { ...parent.dataLoaderOptions }
   );

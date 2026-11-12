@@ -32,6 +32,10 @@
       "model": "KeyVaultCanary",
       "namespace": "public"
     },
+    "microdeposits": {
+      "model": "Microdeposit",
+      "namespace": "public"
+    },
     "monthly_volumes": {
       "model": "MonthlyVolume",
       "namespace": "public"
@@ -1318,6 +1322,144 @@
               },
               "namespaceId": "public",
               "table": "key_vault_canaries"
+            }
+          },
+          "Microdeposit": {
+            "fields": {
+              "amountInCents": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int8@1",
+                  "kind": "scalar"
+                }
+              },
+              "bridgeActivityId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "kind": "scalar"
+                }
+              },
+              "currency": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "customerId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "description": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "occurredAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "kind": "scalar"
+                }
+              },
+              "paymentRail": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "senderName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "virtualAccountId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "virtualAccount": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "virtualAccountId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "VirtualAccount",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "amountInCents": {
+                  "column": "amountInCents"
+                },
+                "bridgeActivityId": {
+                  "column": "bridgeActivityId"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "currency": {
+                  "column": "currency"
+                },
+                "customerId": {
+                  "column": "customerId"
+                },
+                "description": {
+                  "column": "description"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "occurredAt": {
+                  "column": "occurredAt"
+                },
+                "paymentRail": {
+                  "column": "paymentRail"
+                },
+                "senderName": {
+                  "column": "senderName"
+                },
+                "virtualAccountId": {
+                  "column": "virtualAccountId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "microdeposits"
             }
           },
           "MonthlyVolume": {
@@ -2632,6 +2774,21 @@
                   "namespace": "public"
                 }
               },
+              "microdeposits": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "virtualAccountId"
+                  ]
+                },
+                "to": {
+                  "model": "Microdeposit",
+                  "namespace": "public"
+                }
+              },
               "transactions": {
                 "cardinality": "1:N",
                 "on": {
@@ -3023,6 +3180,13 @@
           },
           "WebhookEvent": {
             "fields": {
+              "activityType": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "attempts": {
                 "nullable": false,
                 "type": {
@@ -3124,6 +3288,9 @@
             "relations": {},
             "storage": {
               "fields": {
+                "activityType": {
+                  "column": "activityType"
+                },
                 "attempts": {
                   "column": "attempts"
                 },
@@ -3873,6 +4040,120 @@
                 {
                   "columns": [
                     "masterKeyVersion"
+                  ]
+                }
+              ]
+            },
+            "microdeposits": {
+              "columns": {
+                "amountInCents": {
+                  "codecId": "pg/int8@1",
+                  "nativeType": "int8",
+                  "nullable": false
+                },
+                "bridgeActivityId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false,
+                  "typeRef": "Timestamp"
+                },
+                "currency": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "customerId": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "description": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "occurredAt": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false,
+                  "typeRef": "Timestamp"
+                },
+                "paymentRail": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "senderName": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "virtualAccountId": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "virtualAccountId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "microdeposits"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "virtual_accounts"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "customerId"
+                  ],
+                  "name": "microdeposits_customerId_idx_b2a8a46c",
+                  "prefix": "microdeposits_customerId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "virtualAccountId"
+                  ],
+                  "name": "microdeposits_virtualAccountId_idx_e02ad156",
+                  "prefix": "microdeposits_virtualAccountId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "bridgeActivityId"
                   ]
                 }
               ]
@@ -5306,6 +5587,11 @@
                 }
               ],
               "columns": {
+                "activityType": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "attempts": {
                   "codecId": "pg/int4@1",
                   "default": {
@@ -5549,7 +5835,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "02009c53c6af9a35fcffcfdb3072c301f05869af8b197c895045eac4c44b0228",
+    "storageHash": "9b78fc8c6ebbd767deaa3016b4f16180787694bc1ace2d0f5442ffc8a993652d",
     "types": {
       "Timestamp": {
         "codecId": "pg/timestamptz-date@1",
@@ -5562,7 +5848,7 @@
     }
   },
   "execution": {
-    "executionHash": "9371ff8d9b998908d006f464f72dbd9a18f427aad6413625c2c8d0e50c7b6cf7",
+    "executionHash": "9ca22254262dc96290c924a3d9df1b14361e4ae22d8a951a89fffba8ea856af9",
     "mutations": {
       "defaults": [
         {
@@ -5687,6 +5973,17 @@
           },
           "ref": {
             "entry": "key_vault_canaries",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "microdeposits",
             "field": "id",
             "namespace": "public"
           }

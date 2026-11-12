@@ -1,0 +1,282 @@
+[
+  {
+    "id": "table.microdeposits",
+    "label": "Create table \"microdeposits\"",
+    "summary": "Creates table \"microdeposits\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "microdeposits"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"microdeposits\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"microdeposits\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"microdeposits\"",
+        "sql": "CREATE TABLE \"public\".\"microdeposits\" (\n  \"amountInCents\" int8 NOT NULL,\n  \"bridgeActivityId\" text NOT NULL,\n  \"createdAt\" timestamptz(3) DEFAULT (now()) NOT NULL,\n  \"currency\" text NOT NULL,\n  \"customerId\" uuid NOT NULL,\n  \"description\" text,\n  \"id\" uuid NOT NULL,\n  \"occurredAt\" timestamptz(3) NOT NULL,\n  \"paymentRail\" text,\n  \"senderName\" text,\n  \"virtualAccountId\" uuid NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"microdeposits\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"microdeposits\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.webhook_events.activityType",
+    "label": "Add column \"activityType\" to \"webhook_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "activityType",
+        "table": "webhook_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"activityType\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "webhook_events",
+          "activityType"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"activityType\"",
+        "sql": "ALTER TABLE \"public\".\"webhook_events\" ADD COLUMN \"activityType\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"activityType\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "webhook_events",
+          "activityType"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.microdeposits.microdeposits_bridgeActivityId_key",
+    "label": "Add unique constraint on \"microdeposits\" (bridgeActivityId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "microdeposits_bridgeActivityId_key",
+        "table": "microdeposits"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"microdeposits_bridgeActivityId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "microdeposits_bridgeActivityId_key",
+          "public",
+          "\"public\".\"microdeposits\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"microdeposits_bridgeActivityId_key\"",
+        "sql": "ALTER TABLE \"public\".\"microdeposits\" ADD CONSTRAINT \"microdeposits_bridgeActivityId_key\" UNIQUE (\"bridgeActivityId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"microdeposits_bridgeActivityId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "microdeposits_bridgeActivityId_key",
+          "public",
+          "\"public\".\"microdeposits\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.microdeposits.microdeposits_customerId_idx_b2a8a46c",
+    "label": "Create index \"microdeposits_customerId_idx_b2a8a46c\" on \"microdeposits\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "microdeposits_customerId_idx_b2a8a46c",
+        "table": "microdeposits"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"microdeposits_customerId_idx_b2a8a46c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"microdeposits_customerId_idx_b2a8a46c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"microdeposits_customerId_idx_b2a8a46c\"",
+        "sql": "CREATE INDEX \"microdeposits_customerId_idx_b2a8a46c\" ON \"public\".\"microdeposits\" (\"customerId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"microdeposits_customerId_idx_b2a8a46c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"microdeposits_customerId_idx_b2a8a46c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.microdeposits.microdeposits_virtualAccountId_idx_e02ad156",
+    "label": "Create index \"microdeposits_virtualAccountId_idx_e02ad156\" on \"microdeposits\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "microdeposits_virtualAccountId_idx_e02ad156",
+        "table": "microdeposits"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"microdeposits_virtualAccountId_idx_e02ad156\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"microdeposits_virtualAccountId_idx_e02ad156\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"microdeposits_virtualAccountId_idx_e02ad156\"",
+        "sql": "CREATE INDEX \"microdeposits_virtualAccountId_idx_e02ad156\" ON \"public\".\"microdeposits\" (\"virtualAccountId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"microdeposits_virtualAccountId_idx_e02ad156\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"microdeposits_virtualAccountId_idx_e02ad156\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.microdeposits.microdeposits_virtualAccountId_fkey",
+    "label": "Add foreign key \"microdeposits_virtualAccountId_fkey\" on \"microdeposits\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "microdeposits_virtualAccountId_fkey",
+        "table": "microdeposits"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"microdeposits_virtualAccountId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "microdeposits_virtualAccountId_fkey",
+          "public",
+          "\"public\".\"microdeposits\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"microdeposits_virtualAccountId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"microdeposits\"\nADD CONSTRAINT \"microdeposits_virtualAccountId_fkey\"\nFOREIGN KEY (\"virtualAccountId\")\nREFERENCES \"public\".\"virtual_accounts\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"microdeposits_virtualAccountId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "microdeposits_virtualAccountId_fkey",
+          "public",
+          "\"public\".\"microdeposits\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "data.webhook_events.activityType.backfill",
+    "label": "Backfill webhook event activity types",
+    "operationClass": "data",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "copy the activity type or object status out of the payload",
+        "sql": "UPDATE \"public\".\"webhook_events\"\n              SET \"activityType\" = CASE\n                WHEN \"category\" = 'virtual_account.activity' THEN \"payload\"->'event_object'->>'type'\n                ELSE \"payload\"->>'event_object_status'\n              END\n              WHERE \"activityType\" IS NULL"
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "data.microdeposits.backfill",
+    "label": "Copy received microdeposits from the webhook log",
+    "operationClass": "data",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "insert one row per Bridge microdeposit activity",
+        "sql": "INSERT INTO \"public\".\"microdeposits\"\n                (\"id\", \"bridgeActivityId\", \"virtualAccountId\", \"customerId\", \"amountInCents\",\n                 \"currency\", \"paymentRail\", \"senderName\", \"description\", \"occurredAt\")\n              SELECT DISTINCT ON (w.\"payload\"->'event_object'->>'id')\n                gen_random_uuid(),\n                w.\"payload\"->'event_object'->>'id',\n                va.\"id\",\n                va.\"customerId\",\n                round((w.\"payload\"->'event_object'->>'amount')::numeric * 100)::int8,\n                lower(coalesce(w.\"payload\"->'event_object'->>'currency', va.\"sourceCurrency\"::text)),\n                w.\"payload\"->'event_object'->'source'->>'payment_rail',\n                w.\"payload\"->'event_object'->'source'->>'sender_name',\n                w.\"payload\"->'event_object'->'source'->>'description',\n                coalesce((w.\"payload\"->'event_object'->>'created_at')::timestamptz, w.\"receivedAt\")\n              \n  FROM \"public\".\"webhook_events\" w\n  JOIN \"public\".\"virtual_accounts\" va\n    ON va.\"bridgeVirtualAccountId\" = w.\"payload\"->'event_object'->>'virtual_account_id'\n  WHERE w.\"category\" = 'virtual_account.activity'\n    AND w.\"payload\"->'event_object'->>'type' = 'microdeposit'\n    AND w.\"payload\"->'event_object'->>'amount' ~ '^[0-9]+(\\.[0-9]+)?$'\n              ORDER BY w.\"payload\"->'event_object'->>'id', w.\"receivedAt\"\n              ON CONFLICT (\"bridgeActivityId\") DO NOTHING"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "every known microdeposit event has a row",
+        "sql": "SELECT NOT EXISTS (\n                SELECT 1 \n  FROM \"public\".\"webhook_events\" w\n  JOIN \"public\".\"virtual_accounts\" va\n    ON va.\"bridgeVirtualAccountId\" = w.\"payload\"->'event_object'->>'virtual_account_id'\n  WHERE w.\"category\" = 'virtual_account.activity'\n    AND w.\"payload\"->'event_object'->>'type' = 'microdeposit'\n    AND w.\"payload\"->'event_object'->>'amount' ~ '^[0-9]+(\\.[0-9]+)?$'\n                  AND NOT EXISTS (\n                    SELECT 1 FROM \"public\".\"microdeposits\" m\n                    WHERE m.\"bridgeActivityId\" = w.\"payload\"->'event_object'->>'id'\n                  )\n              ) AS \"result\""
+      }
+    ]
+  }
+]

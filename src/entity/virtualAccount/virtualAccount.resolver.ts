@@ -22,6 +22,7 @@ import { CustomerScope, StaffOnlyField, assertOwnership } from '#src/graphql/mid
 import { Customer } from '#src/entity/customer/customer.entity.js';
 
 import { DepositInstructions, VirtualAccount } from './virtualAccount.entity.js';
+import { Microdeposit } from './microdeposit.entity.js';
 import { VirtualAccountQueryArgs, VirtualAccountsResponse } from './virtualAccount.type.js';
 import { VirtualAccountService } from './virtualAccount.service.js';
 
@@ -96,5 +97,11 @@ export class VirtualAccountResolver {
   @FieldResolver(() => Customer, { nullable: true })
   async customer(@Root() va: VirtualAccount, @Ctx() ctx: Context) {
     return ctx.dataLoader.get('customerLoader').load(va.customerId);
+  }
+
+  /** Newest first. Bank-verification deposits; not transactions. */
+  @FieldResolver(() => [Microdeposit])
+  async microdeposits(@Root() va: VirtualAccount, @Ctx() ctx: Context) {
+    return ctx.dataLoader.get('microdepositsForVirtualAccountLoader').load(va.id);
   }
 }

@@ -15,6 +15,12 @@ export class WebhookEvent extends Entity {
   @Field(() => String)
   type: string;
 
+  @Field(() => String, {
+    nullable: true,
+    description: 'Virtual account activity type (e.g. microdeposit), else the object status',
+  })
+  activityType?: string | null;
+
   @Field(() => String, { nullable: true })
   objectId?: string | null;
 
