@@ -1368,6 +1368,13 @@
                   "kind": "scalar"
                 }
               },
+              "estimatedArrivalDate": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -1390,6 +1397,20 @@
                 }
               },
               "senderName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "traceNumber": {
                 "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
@@ -1442,6 +1463,9 @@
                 "description": {
                   "column": "description"
                 },
+                "estimatedArrivalDate": {
+                  "column": "estimatedArrivalDate"
+                },
                 "id": {
                   "column": "id"
                 },
@@ -1453,6 +1477,12 @@
                 },
                 "senderName": {
                   "column": "senderName"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "traceNumber": {
+                  "column": "traceNumber"
                 },
                 "virtualAccountId": {
                   "column": "virtualAccountId"
@@ -4081,6 +4111,11 @@
                   "nativeType": "text",
                   "nullable": true
                 },
+                "estimatedArrivalDate": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "id": {
                   "codecId": "pg/uuid@1",
                   "nativeType": "uuid",
@@ -4098,6 +4133,20 @@
                   "nullable": true
                 },
                 "senderName": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "funds_received"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "traceNumber": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": true
@@ -4142,6 +4191,15 @@
                   ],
                   "name": "microdeposits_virtualAccountId_idx_e02ad156",
                   "prefix": "microdeposits_virtualAccountId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "virtualAccountId",
+                    "traceNumber"
+                  ],
+                  "name": "microdeposits_virtualAccountId_traceNumber_idx_76869d05",
+                  "prefix": "microdeposits_virtualAccountId_traceNumber_idx",
                   "unique": false
                 }
               ],
@@ -5835,7 +5893,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "9b78fc8c6ebbd767deaa3016b4f16180787694bc1ace2d0f5442ffc8a993652d",
+    "storageHash": "0c9c0c45253063d6ba2660276ba9cf78336b41c9a2e313a24b0c58f960a39aa4",
     "types": {
       "Timestamp": {
         "codecId": "pg/timestamptz-date@1",

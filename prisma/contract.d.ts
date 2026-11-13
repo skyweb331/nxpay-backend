@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'9b78fc8c6ebbd767deaa3016b4f16180787694bc1ace2d0f5442ffc8a993652d'>;
+  StorageHashBase<'0c9c0c45253063d6ba2660276ba9cf78336b41c9a2e313a24b0c58f960a39aa4'>;
 export type ExecutionHash =
   ExecutionHashBase<'9ca22254262dc96290c924a3d9df1b14361e4ae22d8a951a89fffba8ea856af9'>;
 export type ProfileHash =
@@ -341,10 +341,13 @@ export type FieldOutputTypes = {
       readonly currency: CodecTypes['pg/text@1']['output'];
       readonly customerId: CodecTypes['pg/uuid@1']['output'];
       readonly description: CodecTypes['pg/text@1']['output'] | null;
+      readonly estimatedArrivalDate: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly occurredAt: Date;
       readonly paymentRail: CodecTypes['pg/text@1']['output'] | null;
       readonly senderName: CodecTypes['pg/text@1']['output'] | null;
+      readonly status: CodecTypes['pg/text@1']['output'];
+      readonly traceNumber: CodecTypes['pg/text@1']['output'] | null;
       readonly virtualAccountId: CodecTypes['pg/uuid@1']['output'];
     };
     readonly MonthlyVolume: {
@@ -607,10 +610,13 @@ export type FieldInputTypes = {
       readonly currency: CodecTypes['pg/text@1']['input'];
       readonly customerId: CodecTypes['pg/uuid@1']['input'];
       readonly description: CodecTypes['pg/text@1']['input'] | null;
+      readonly estimatedArrivalDate: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly occurredAt: CodecTypes['pg/timestamptz-date@1']['input'];
       readonly paymentRail: CodecTypes['pg/text@1']['input'] | null;
       readonly senderName: CodecTypes['pg/text@1']['input'] | null;
+      readonly status: CodecTypes['pg/text@1']['input'];
+      readonly traceNumber: CodecTypes['pg/text@1']['input'] | null;
       readonly virtualAccountId: CodecTypes['pg/uuid@1']['input'];
     };
     readonly MonthlyVolume: {
@@ -873,10 +879,13 @@ export type StorageColumnTypes = {
       readonly currency: CodecTypes['pg/text@1']['output'];
       readonly customerId: CodecTypes['pg/uuid@1']['output'];
       readonly description: CodecTypes['pg/text@1']['output'] | null;
+      readonly estimatedArrivalDate: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly occurredAt: Date;
       readonly paymentRail: CodecTypes['pg/text@1']['output'] | null;
       readonly senderName: CodecTypes['pg/text@1']['output'] | null;
+      readonly status: CodecTypes['pg/text@1']['output'];
+      readonly traceNumber: CodecTypes['pg/text@1']['output'] | null;
       readonly virtualAccountId: CodecTypes['pg/uuid@1']['output'];
     };
     readonly monthly_volumes: {
@@ -1139,10 +1148,13 @@ export type StorageColumnInputTypes = {
       readonly currency: CodecTypes['pg/text@1']['input'];
       readonly customerId: CodecTypes['pg/uuid@1']['input'];
       readonly description: CodecTypes['pg/text@1']['input'] | null;
+      readonly estimatedArrivalDate: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly occurredAt: CodecTypes['pg/timestamptz-date@1']['input'];
       readonly paymentRail: CodecTypes['pg/text@1']['input'] | null;
       readonly senderName: CodecTypes['pg/text@1']['input'] | null;
+      readonly status: CodecTypes['pg/text@1']['input'];
+      readonly traceNumber: CodecTypes['pg/text@1']['input'] | null;
       readonly virtualAccountId: CodecTypes['pg/uuid@1']['input'];
     };
     readonly monthly_volumes: {
@@ -1431,10 +1443,13 @@ export namespace Models {
     currency: CodecTypes['pg/text@1']['output'];
     customerId: CodecTypes['pg/uuid@1']['output'];
     description: CodecTypes['pg/text@1']['output'] | null;
+    estimatedArrivalDate: CodecTypes['pg/text@1']['output'] | null;
     id: CodecTypes['pg/uuid@1']['output'];
     occurredAt: Date;
     paymentRail: CodecTypes['pg/text@1']['output'] | null;
     senderName: CodecTypes['pg/text@1']['output'] | null;
+    status: CodecTypes['pg/text@1']['output'];
+    traceNumber: CodecTypes['pg/text@1']['output'] | null;
     virtualAccountId: CodecTypes['pg/uuid@1']['output'];
     virtualAccount: public_VirtualAccount;
     readonly [RelationKeys]?: 'virtualAccount';
@@ -2255,6 +2270,11 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/text@1';
                   readonly nullable: true;
                 };
+                readonly estimatedArrivalDate: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
                 readonly id: {
                   readonly nativeType: 'uuid';
                   readonly codecId: 'pg/uuid@1';
@@ -2272,6 +2292,20 @@ type ContractBase = Omit<
                   readonly nullable: true;
                 };
                 readonly senderName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly status: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'funds_received'>;
+                  };
+                };
+                readonly traceNumber: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: true;
@@ -2295,6 +2329,12 @@ type ContractBase = Omit<
                   readonly name: 'microdeposits_virtualAccountId_idx_e02ad156';
                   readonly prefix: 'microdeposits_virtualAccountId_idx';
                   readonly columns: readonly ['virtualAccountId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'microdeposits_virtualAccountId_traceNumber_idx_76869d05';
+                  readonly prefix: 'microdeposits_virtualAccountId_traceNumber_idx';
+                  readonly columns: readonly ['virtualAccountId', 'traceNumber'];
                   readonly unique: false;
                 },
               ];
@@ -4265,6 +4305,10 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly estimatedArrivalDate: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly id: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
@@ -4281,6 +4325,14 @@ type ContractBase = Omit<
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly senderName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly traceNumber: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
@@ -4313,10 +4365,13 @@ type ContractBase = Omit<
                 readonly currency: { readonly column: 'currency' };
                 readonly customerId: { readonly column: 'customerId' };
                 readonly description: { readonly column: 'description' };
+                readonly estimatedArrivalDate: { readonly column: 'estimatedArrivalDate' };
                 readonly id: { readonly column: 'id' };
                 readonly occurredAt: { readonly column: 'occurredAt' };
                 readonly paymentRail: { readonly column: 'paymentRail' };
                 readonly senderName: { readonly column: 'senderName' };
+                readonly status: { readonly column: 'status' };
+                readonly traceNumber: { readonly column: 'traceNumber' };
                 readonly virtualAccountId: { readonly column: 'virtualAccountId' };
               };
             };

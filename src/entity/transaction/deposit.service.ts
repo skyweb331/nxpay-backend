@@ -1,4 +1,5 @@
 import { Service } from 'typedi';
+import { and } from '@prisma/orm-postgres/orm-client';
 
 import {
   PrismaService,
@@ -36,6 +37,24 @@ const RAIL_LABEL: Record<string, string> = {
 const cents = (value?: string | null, round: boolean | 'floor' = true) =>
   value === undefined || value === null || value === '' ? null : decimalToCents(value, { round });
 
+const text = (value: unknown) => (typeof value === 'string' && value ? value : null);
+
+/**
+ * Bridge labels some as `microdeposit`; others arrive as ordinary funds_* activity
+ * carrying the NACHA `ACCTVERIFY` entry description, always under $1.
+ */
+const isMicrodeposit = (activity: BridgeVirtualAccountEvent) => {
+  const amount = cents(activity.amount);
+  if (amount === null) return false;
+  if (activity.type === 'microdeposit') return true;
+  const description = text(activity.source?.['description']) ?? '';
+  return amount < 100n && /\bACCTVERIFY\b/i.test(description);
+};
+
+/** Later stages win, so out-of-order delivery can't move a deposit back to scheduled. */
+const statusRank = (type: string) =>
+  ({ funds_scheduled: 0, in_review: 1, funds_received: 2, microdeposit: 2 })[type] ?? 3;
+
 type AfterCommit = () => Promise<unknown> | unknown;
 
 /**
@@ -55,18 +74,38 @@ export class DepositService {
     private readonly queue: QueueService
   ) {}
 
+  /**
+   * One row per deposit: the scheduled and received activities have different ids
+   * but share the ACH trace number, so later activities update the status.
+   */
   private async recordMicrodeposit(
     va: VirtualAccountRow,
     activity: BridgeVirtualAccountEvent
   ): Promise<WebhookOutcome> {
-    const amount = cents(activity.amount);
-    if (amount === null) {
-      console.warn(`[deposit] microdeposit ${activity.id} has no amount`);
-      return 'ignored';
-    }
+    const amount = cents(activity.amount)!;
     const source = activity.source ?? {};
-    const text = (value: unknown) => (typeof value === 'string' && value ? value : null);
-    try {
+    const traceNumber = text(source['trace_number']);
+    const arrival = text(source['estimated_arrival_date']);
+
+    return this.prisma.transaction(async () => {
+      await this.prisma.advisoryXactLock(
+        lockKey(`microdeposit:${va.id}:${traceNumber ?? activity.id}`)
+      );
+      const existing = await this.prisma.orm.Microdeposit.where((m) =>
+        traceNumber
+          ? and(m.virtualAccountId.eq(va.id), m.traceNumber.eq(traceNumber))
+          : m.bridgeActivityId.eq(activity.id)
+      ).first();
+
+      if (existing) {
+        if (statusRank(activity.type) < statusRank(existing.status)) return 'ignored';
+        await this.prisma.orm.Microdeposit.where({ id: existing.id }).update({
+          status: activity.type,
+          estimatedArrivalDate: activity.type === 'funds_scheduled' ? arrival : null,
+        });
+        return 'processed';
+      }
+
       await this.prisma.orm.Microdeposit.create({
         bridgeActivityId: activity.id,
         virtualAccountId: va.id,
@@ -76,12 +115,13 @@ export class DepositService {
         paymentRail: text(source.payment_rail),
         senderName: text(source['sender_name']),
         description: text(source['description']),
+        traceNumber,
+        status: activity.type,
+        estimatedArrivalDate: activity.type === 'funds_scheduled' ? arrival : null,
         occurredAt: activity.created_at ? new Date(activity.created_at) : new Date(),
       });
-    } catch (error) {
-      if (!isSqlError(error, '23505')) throw error;
-    }
-    return 'processed';
+      return 'processed';
+    });
   }
 
   handleWebhook(event: BridgeWebhookEvent<BridgeVirtualAccountEvent>): Promise<WebhookOutcome> {
@@ -105,8 +145,8 @@ export class DepositService {
         await this.virtualAccounts.refresh(va, customer.bridgeCustomerId);
       return 'processed';
     }
-    // Microdeposits (bank account verification, < $1) are recorded but never onramped
-    if (activity.type === 'microdeposit') return this.recordMicrodeposit(va, activity);
+    // Bank account verification deposits are recorded but never become transactions
+    if (isMicrodeposit(activity)) return this.recordMicrodeposit(va, activity);
     if (!activity.deposit_id) return 'ignored';
 
     // EUR volume is converted at funds_received time; fetch outside the DB transaction

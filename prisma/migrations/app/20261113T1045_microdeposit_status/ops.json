@@ -1,0 +1,199 @@
+[
+  {
+    "id": "column.public.microdeposits.estimatedArrivalDate",
+    "label": "Add column \"estimatedArrivalDate\" to \"microdeposits\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "estimatedArrivalDate",
+        "table": "microdeposits"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"estimatedArrivalDate\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "microdeposits",
+          "estimatedArrivalDate"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"estimatedArrivalDate\"",
+        "sql": "ALTER TABLE \"public\".\"microdeposits\" ADD COLUMN \"estimatedArrivalDate\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"estimatedArrivalDate\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "microdeposits",
+          "estimatedArrivalDate"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.microdeposits.status",
+    "label": "Add column \"status\" to \"microdeposits\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "status",
+        "table": "microdeposits"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"status\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "microdeposits",
+          "status"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"status\"",
+        "sql": "ALTER TABLE \"public\".\"microdeposits\" ADD COLUMN \"status\" text DEFAULT 'funds_received' NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"status\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "microdeposits",
+          "status"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.microdeposits.traceNumber",
+    "label": "Add column \"traceNumber\" to \"microdeposits\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "traceNumber",
+        "table": "microdeposits"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"traceNumber\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "microdeposits",
+          "traceNumber"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"traceNumber\"",
+        "sql": "ALTER TABLE \"public\".\"microdeposits\" ADD COLUMN \"traceNumber\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"traceNumber\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "microdeposits",
+          "traceNumber"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.microdeposits.microdeposits_virtualAccountId_traceNumber_idx_76869d05",
+    "label": "Create index \"microdeposits_virtualAccountId_traceNumber_idx_76869d05\" on \"microdeposits\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "microdeposits_virtualAccountId_traceNumber_idx_76869d05",
+        "table": "microdeposits"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"microdeposits_virtualAccountId_traceNumber_idx_76869d05\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"microdeposits_virtualAccountId_traceNumber_idx_76869d05\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"microdeposits_virtualAccountId_traceNumber_idx_76869d05\"",
+        "sql": "CREATE INDEX \"microdeposits_virtualAccountId_traceNumber_idx_76869d05\" ON \"public\".\"microdeposits\" (\"virtualAccountId\", \"traceNumber\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"microdeposits_virtualAccountId_traceNumber_idx_76869d05\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"microdeposits_virtualAccountId_traceNumber_idx_76869d05\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "data.microdeposits.traceNumber.backfill",
+    "label": "Fill status and trace number on existing microdeposits",
+    "operationClass": "data",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "copy the trace number from the original activity",
+        "sql": "UPDATE \"public\".\"microdeposits\" m\n              SET \"status\" = 'microdeposit',\n                \"traceNumber\" = w.\"payload\"->'event_object'->'source'->>'trace_number'\n              FROM \"public\".\"webhook_events\" w\n              WHERE w.\"category\" = 'virtual_account.activity'\n                AND w.\"payload\"->'event_object'->>'id' = m.\"bridgeActivityId\""
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "data.webhook_events.acctverify.requeue",
+    "label": "Reprocess ignored account-verification deposits",
+    "operationClass": "data",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "mark ignored ACCTVERIFY activity as pending so the sweeper records it",
+        "sql": "UPDATE \"public\".\"webhook_events\"\n              SET \"status\" = 'Pending', \"error\" = NULL\n              WHERE \"category\" = 'virtual_account.activity'\n                AND \"status\" = 'Ignored'\n                AND \"payload\"->'event_object'->'source'->>'description' ~* '\\mACCTVERIFY\\M'\n                AND \"payload\"->'event_object'->>'amount' ~ '^0*\\.[0-9]+$'"
+      }
+    ],
+    "postcheck": []
+  }
+]

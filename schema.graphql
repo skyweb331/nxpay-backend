@@ -428,10 +428,12 @@ type Microdeposit implements Entity & TimeStamp {
   currency: String!
   customerId: ID!
   description: String
+  estimatedArrivalDate: String
   id: ID!
   occurredAt: DateTimeISO!
   paymentRail: String
   senderName: String
+  status: String!
   updatedAt: DateTimeISO
   virtualAccountId: ID!
 }
